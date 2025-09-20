@@ -1,8 +1,8 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
 import { Chat, Message, AppState } from '@/types';
-import { generateId } from '@/utils';
+import { generateId, storage } from '@/utils';
 
 // Initial state
 const initialState: AppState = {
@@ -133,6 +133,31 @@ const ChatContext = createContext<{
 // Provider
 export function ChatProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(chatReducer, initialState);
+
+  // Load chats from localStorage on mount
+  useEffect(() => {
+    const savedChats = storage.get('chats');
+    if (savedChats && Array.isArray(savedChats)) {
+      // Convert date strings back to Date objects
+      const chats = savedChats.map((chat: any) => ({
+        ...chat,
+        createdAt: new Date(chat.createdAt),
+        updatedAt: new Date(chat.updatedAt),
+        messages: chat.messages.map((msg: any) => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp),
+        })),
+      }));
+      dispatch({ type: 'LOAD_CHATS', payload: chats });
+    }
+  }, []);
+
+  // Save chats to localStorage whenever chats change
+  useEffect(() => {
+    if (state.chats.length > 0) {
+      storage.set('chats', state.chats);
+    }
+  }, [state.chats]);
 
   return (
     <ChatContext.Provider value={{ state, dispatch }}>

@@ -5,6 +5,7 @@ import { Menu, Bot } from 'lucide-react';
 import { useChat } from '@/context/ChatContext';
 import { useChatAPI } from '@/hooks/useChatAPI';
 import { Message } from '@/types';
+import { generateChatTitle } from '@/utils';
 import MessageBubble from './MessageBubble';
 import TypingIndicator from './TypingIndicator';
 import ChatInput from './ChatInput';
@@ -48,6 +49,15 @@ export default function ChatArea({ sidebarOpen, onToggleSidebar, isMobile }: Cha
       type: 'ADD_MESSAGE', 
       payload: { chatId: state.currentChat.id, message: userMessage } 
     });
+
+    // Generate chat title if this is the first message
+    if (state.currentChat.messages.length === 0) {
+      const title = generateChatTitle(messageContent.trim());
+      dispatch({ 
+        type: 'RENAME_CHAT', 
+        payload: { chatId: state.currentChat.id, title } 
+      });
+    }
 
     // Create AI message placeholder for streaming
     const aiMessageId = `msg-${Date.now() + 1}`;
