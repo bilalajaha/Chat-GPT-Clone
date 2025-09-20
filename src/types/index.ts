@@ -95,12 +95,69 @@ export interface Theme {
   mode: 'light' | 'dark';
 }
 
+// Loading states
+export interface LoadingState {
+  global: boolean;
+  chat: boolean;
+  message: boolean;
+  api: boolean;
+}
+
+// Error states
+export interface ErrorState {
+  message: string | null;
+  type: 'api' | 'network' | 'validation' | 'storage' | null;
+  timestamp: Date | null;
+  retryable: boolean;
+}
+
+// User preferences
+export interface UserPreferences {
+  theme: 'light' | 'dark';
+  autoSave: boolean;
+  soundEnabled: boolean;
+  animationsEnabled: boolean;
+  defaultModel: string;
+  temperature: number;
+  maxTokens: number;
+}
+
+// App settings
+export interface AppSettings {
+  apiKey: string | null;
+  selectedModel: string;
+  temperature: number;
+  maxTokens: number;
+  enableStreaming: boolean;
+  autoSave: boolean;
+}
+
+// Chat statistics
+export interface ChatStats {
+  totalMessages: number;
+  totalChats: number;
+  totalTokens: number;
+  averageResponseTime: number;
+  lastActivity: Date | null;
+}
+
 export interface AppState {
   chats: Chat[];
   currentChat: Chat | null;
-  isLoading: boolean;
-  error: string | null;
+  loading: LoadingState;
+  error: ErrorState;
   theme: Theme;
+  preferences: UserPreferences;
+  settings: AppSettings;
+  stats: ChatStats;
+  ui: {
+    sidebarOpen: boolean;
+    searchQuery: string;
+    selectedChatId: string | null;
+    editingChatId: string | null;
+    showSettings: boolean;
+    showAbout: boolean;
+  };
 }
 
 // Component props types

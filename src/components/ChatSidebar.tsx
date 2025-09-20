@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Menu, Plus, MessageSquare, MoreVertical, Edit2, Trash2, Search, Trash } from 'lucide-react';
-import { useChat } from '@/context/ChatContext';
+import { useChatState } from '@/hooks/useChatState';
+import { useAppState } from '@/hooks/useAppState';
 import { Chat } from '@/types';
-import { formatChatDate, truncateText, storage } from '@/utils';
+import { formatChatDate, truncateText } from '@/utils';
 
 interface ChatSidebarProps {
   onToggle: () => void;
@@ -12,9 +13,21 @@ interface ChatSidebarProps {
 }
 
 export default function ChatSidebar({ onToggle, isMobile }: ChatSidebarProps) {
-  const { state, dispatch } = useChat();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [editingChatId, setEditingChatId] = useState<string | null>(null);
+  const { 
+    chats, 
+    currentChat, 
+    createNewChat, 
+    selectChat, 
+    deleteChat, 
+    renameChat, 
+    clearAllChats,
+    searchChats 
+  } = useChatState();
+  const { 
+    setSearchQuery, 
+    setEditingChatId, 
+    setSidebarOpen 
+  } = useAppState();
   const [editingTitle, setEditingTitle] = useState('');
   const [showDropdown, setShowDropdown] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -55,26 +68,18 @@ export default function ChatSidebar({ onToggle, isMobile }: ChatSidebarProps) {
   }, []);
 
   const handleNewChat = () => {
-    const newChat: Chat = {
-      id: `chat-${Date.now()}`,
-      title: 'New Chat',
-      messages: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    dispatch({ type: 'ADD_CHAT', payload: newChat });
+    createNewChat();
     if (isMobile) {
       onToggle();
     }
   };
 
   const handleChatSelect = (chat: Chat) => {
-    dispatch({ type: 'SET_CURRENT_CHAT', payload: chat });
+    selectChat(chat);
     if (isMobile) {
       onToggle();
     }
   };
-
 
   const startEditing = (chat: Chat) => {
     setEditingChatId(chat.id);
@@ -89,14 +94,14 @@ export default function ChatSidebar({ onToggle, isMobile }: ChatSidebarProps) {
 
   const handleDeleteChat = (chatId: string) => {
     if (confirm('Are you sure you want to delete this chat?')) {
-      dispatch({ type: 'DELETE_CHAT', payload: chatId });
+      deleteChat(chatId);
       setShowDropdown(null);
     }
   };
 
   const handleRenameChat = (chatId: string, newTitle: string) => {
     if (newTitle.trim()) {
-      dispatch({ type: 'RENAME_CHAT', payload: { chatId, title: newTitle.trim() } });
+      renameChat(chatId, newTitle.trim());
     }
     setEditingChatId(null);
     setEditingTitle('');
@@ -105,15 +110,16 @@ export default function ChatSidebar({ onToggle, isMobile }: ChatSidebarProps) {
 
   const handleClearAllChats = () => {
     if (confirm('Are you sure you want to clear all chats? This action cannot be undone.')) {
-      storage.remove('chats');
-      dispatch({ type: 'LOAD_CHATS', payload: [] });
+      clearAllChats();
       setShowDropdown(null);
     }
   };
 
-  const filteredChats = state.chats.filter(chat =>
-    chat.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+  };
+
+  const filteredChats = searchChats(searchQuery);
 
   return (
     <div className="h-full flex flex-col">
@@ -152,7 +158,7 @@ export default function ChatSidebar({ onToggle, isMobile }: ChatSidebarProps) {
             type="text"
             placeholder="Search chats..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
           />
         </div>
@@ -174,7 +180,7 @@ export default function ChatSidebar({ onToggle, isMobile }: ChatSidebarProps) {
                 key={chat.id}
                 className={`
                   group flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors
-                  ${state.currentChat?.id === chat.id 
+                  ${currentChat?.id === chat.id 
                     ? 'bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800' 
                     : 'hover:bg-gray-100 dark:hover:bg-gray-700'
                   }
@@ -251,7 +257,7 @@ export default function ChatSidebar({ onToggle, isMobile }: ChatSidebarProps) {
           <div className="text-sm text-gray-500 dark:text-gray-400">
             ChatGPT Clone v1.0
           </div>
-          {state.chats.length > 0 && (
+          {chats.length > 0 && (
             <button
               onClick={handleClearAllChats}
               className="text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 flex items-center gap-1"

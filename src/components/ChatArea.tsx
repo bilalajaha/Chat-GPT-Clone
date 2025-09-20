@@ -2,10 +2,10 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Menu, Bot } from 'lucide-react';
-import { useChat } from '@/context/ChatContext';
+import { useChatState } from '@/hooks/useChatState';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useChatAPI } from '@/hooks/useChatAPI';
 import { Message } from '@/types';
-import { generateChatTitle } from '@/utils';
 import MessageBubble from './MessageBubble';
 import TypingIndicator from './TypingIndicator';
 import ChatInput from './ChatInput';
@@ -17,7 +17,8 @@ interface ChatAreaProps {
 }
 
 export default function ChatArea({ sidebarOpen, onToggleSidebar, isMobile }: ChatAreaProps) {
-  const { state, dispatch } = useChat();
+  const { currentChat, addMessage, updateMessage, generateTitleFromFirstMessage } = useChatState();
+  const { handleApiError, clearError } = useErrorHandler();
   const { sendStreamingMessage, isLoading, error } = useChatAPI();
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -25,63 +26,45 @@ export default function ChatArea({ sidebarOpen, onToggleSidebar, isMobile }: Cha
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [state.currentChat?.messages]);
+  }, [currentChat?.messages]);
 
   // Handle API errors
   useEffect(() => {
     if (error) {
-      dispatch({ type: 'SET_ERROR', payload: error });
+      handleApiError(new Error(error), 'Chat API');
     }
-  }, [error, dispatch]);
+  }, [error, handleApiError]);
 
   const handleSendMessage = async (messageContent: string) => {
-    if (!messageContent.trim() || !state.currentChat) return;
+    if (!messageContent.trim() || !currentChat) return;
 
-    const userMessage: Message = {
-      id: `msg-${Date.now()}`,
-      content: messageContent.trim(),
-      role: 'user',
-      timestamp: new Date(),
-    };
+    // Clear any existing errors
+    clearError();
 
     // Add user message
-    dispatch({ 
-      type: 'ADD_MESSAGE', 
-      payload: { chatId: state.currentChat.id, message: userMessage } 
+    const userMessage = addMessage(currentChat.id, {
+      content: messageContent.trim(),
+      role: 'user',
     });
 
     // Generate chat title if this is the first message
-    if (state.currentChat.messages.length === 0) {
-      const title = generateChatTitle(messageContent.trim());
-      dispatch({ 
-        type: 'RENAME_CHAT', 
-        payload: { chatId: state.currentChat.id, title } 
-      });
+    if (currentChat.messages.length === 0) {
+      generateTitleFromFirstMessage(currentChat.id, messageContent.trim());
     }
 
     // Create AI message placeholder for streaming
-    const aiMessageId = `msg-${Date.now() + 1}`;
-    const aiMessage: Message = {
-      id: aiMessageId,
+    const aiMessage = addMessage(currentChat.id, {
       content: '',
       role: 'assistant',
-      timestamp: new Date(),
       isStreaming: true,
-    };
-
-    // Add AI message placeholder
-    dispatch({ 
-      type: 'ADD_MESSAGE', 
-      payload: { chatId: state.currentChat.id, message: aiMessage } 
     });
 
     setIsTyping(true);
-    dispatch({ type: 'SET_LOADING', payload: true });
 
     try {
       // Prepare messages for API call
       const messages = [
-        ...state.currentChat.messages.map(msg => ({
+        ...currentChat.messages.map(msg => ({
           role: msg.role as 'user' | 'assistant' | 'system',
           content: msg.content
         })),
@@ -94,45 +77,22 @@ export default function ChatArea({ sidebarOpen, onToggleSidebar, isMobile }: Cha
         fullResponse += chunk;
         
         // Update the AI message with the streaming content
-        dispatch({
-          type: 'UPDATE_MESSAGE',
-          payload: {
-            chatId: state.currentChat.id,
-            messageId: aiMessageId,
-            content: fullResponse,
-          },
-        });
+        updateMessage(currentChat.id, aiMessage.id, fullResponse, true);
       }
 
       // Mark streaming as complete
-      dispatch({
-        type: 'UPDATE_MESSAGE',
-        payload: {
-          chatId: state.currentChat.id,
-          messageId: aiMessageId,
-          content: fullResponse,
-        },
-      });
+      updateMessage(currentChat.id, aiMessage.id, fullResponse, false);
 
     } catch (error) {
       console.error('Error sending message:', error);
+      handleApiError(error, 'Failed to send message');
       
       // Update AI message with error
-      dispatch({
-        type: 'UPDATE_MESSAGE',
-        payload: {
-          chatId: state.currentChat.id,
-          messageId: aiMessageId,
-          content: 'Sorry, I encountered an error. Please try again.',
-        },
-      });
+      updateMessage(currentChat.id, aiMessage.id, 'Sorry, I encountered an error. Please try again.', false);
     } finally {
       setIsTyping(false);
-      dispatch({ type: 'SET_LOADING', payload: false });
     }
   };
-
-  const currentChat = state.currentChat;
 
   return (
     <div className="flex-1 flex flex-col">
