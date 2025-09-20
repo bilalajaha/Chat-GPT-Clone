@@ -1,8 +1,11 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { ChatCompletionRequest, ChatCompletionResponse, GeminiRequest, GeminiResponse } from '@/types';
 
+// Import config
+const config = require('../../config.js');
+
 // Initialize Gemini client
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || config.GEMINI_API_KEY || '');
 
 // Convert OpenAI format to Gemini format
 function convertToGeminiFormat(request: ChatCompletionRequest): GeminiRequest {

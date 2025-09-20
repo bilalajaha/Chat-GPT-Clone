@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Menu, Bot } from 'lucide-react';
 import { useChat } from '@/context/ChatContext';
+import { useChatAPI } from '@/hooks/useChatAPI';
 import { Message } from '@/types';
 import MessageBubble from './MessageBubble';
 import TypingIndicator from './TypingIndicator';
@@ -16,6 +17,7 @@ interface ChatAreaProps {
 
 export default function ChatArea({ sidebarOpen, onToggleSidebar, isMobile }: ChatAreaProps) {
   const { state, dispatch } = useChat();
+  const { sendStreamingMessage, isLoading, error } = useChatAPI();
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -23,6 +25,13 @@ export default function ChatArea({ sidebarOpen, onToggleSidebar, isMobile }: Cha
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [state.currentChat?.messages]);
+
+  // Handle API errors
+  useEffect(() => {
+    if (error) {
+      dispatch({ type: 'SET_ERROR', payload: error });
+    }
+  }, [error, dispatch]);
 
   const handleSendMessage = async (messageContent: string) => {
     if (!messageContent.trim() || !state.currentChat) return;
@@ -40,23 +49,77 @@ export default function ChatArea({ sidebarOpen, onToggleSidebar, isMobile }: Cha
       payload: { chatId: state.currentChat.id, message: userMessage } 
     });
 
+    // Create AI message placeholder for streaming
+    const aiMessageId = `msg-${Date.now() + 1}`;
+    const aiMessage: Message = {
+      id: aiMessageId,
+      content: '',
+      role: 'assistant',
+      timestamp: new Date(),
+      isStreaming: true,
+    };
+
+    // Add AI message placeholder
+    dispatch({ 
+      type: 'ADD_MESSAGE', 
+      payload: { chatId: state.currentChat.id, message: aiMessage } 
+    });
+
     setIsTyping(true);
+    dispatch({ type: 'SET_LOADING', payload: true });
 
-    // Simulate AI response (will be replaced with actual API call)
-    setTimeout(() => {
-      const aiMessage: Message = {
-        id: `msg-${Date.now() + 1}`,
-        content: `This is a simulated response to: "${userMessage.content}". In the next phase, this will be replaced with actual OpenAI API integration.`,
-        role: 'assistant',
-        timestamp: new Date(),
-      };
+    try {
+      // Prepare messages for API call
+      const messages = [
+        ...state.currentChat.messages.map(msg => ({
+          role: msg.role as 'user' | 'assistant' | 'system',
+          content: msg.content
+        })),
+        { role: 'user' as const, content: messageContent.trim() }
+      ];
 
-      dispatch({ 
-        type: 'ADD_MESSAGE', 
-        payload: { chatId: state.currentChat.id, message: aiMessage } 
+      // Stream the response
+      let fullResponse = '';
+      for await (const chunk of sendStreamingMessage(messages)) {
+        fullResponse += chunk;
+        
+        // Update the AI message with the streaming content
+        dispatch({
+          type: 'UPDATE_MESSAGE',
+          payload: {
+            chatId: state.currentChat.id,
+            messageId: aiMessageId,
+            content: fullResponse,
+          },
+        });
+      }
+
+      // Mark streaming as complete
+      dispatch({
+        type: 'UPDATE_MESSAGE',
+        payload: {
+          chatId: state.currentChat.id,
+          messageId: aiMessageId,
+          content: fullResponse,
+        },
       });
+
+    } catch (error) {
+      console.error('Error sending message:', error);
+      
+      // Update AI message with error
+      dispatch({
+        type: 'UPDATE_MESSAGE',
+        payload: {
+          chatId: state.currentChat.id,
+          messageId: aiMessageId,
+          content: 'Sorry, I encountered an error. Please try again.',
+        },
+      });
+    } finally {
       setIsTyping(false);
-    }, 1500);
+      dispatch({ type: 'SET_LOADING', payload: false });
+    }
   };
 
   const currentChat = state.currentChat;

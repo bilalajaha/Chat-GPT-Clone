@@ -1,7 +1,7 @@
-// Copy this file to config.js and add your actual API key
+// Configuration file for the ChatGPT Clone application
 module.exports = {
   // Gemini API Configuration
-  GEMINI_API_KEY: 'your_gemini_api_key_here',
+  GEMINI_API_KEY: 'AIzaSyDJC2uo1TlyT-icghKX863to7XVBvSQScs',
   
   // Optional: Set to 'development' for debug mode
   NODE_ENV: 'development',
