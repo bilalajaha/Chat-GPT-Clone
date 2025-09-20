@@ -45,15 +45,15 @@ export default function ChatInput({ onSendMessage, isLoading, disabled = false }
 
   return (
     <div className="w-full">
-      <div className="flex gap-3">
+      <div className="flex gap-2 sm:gap-3">
         {/* File Upload Button */}
         <button
           onClick={handleFileUpload}
           disabled={isLoading || disabled}
-          className="p-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="p-2 sm:p-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           title="Attach file"
         >
-          <Paperclip className="w-5 h-5" />
+          <Paperclip className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
 
         {/* Input Field */}
@@ -65,7 +65,7 @@ export default function ChatInput({ onSendMessage, isLoading, disabled = false }
             onKeyDown={handleKeyDown}
             placeholder="Type your message here..."
             disabled={isLoading || disabled}
-            className="w-full p-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none min-h-[44px] max-h-32 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full p-2 sm:p-3 pr-10 sm:pr-12 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none min-h-[40px] sm:min-h-[44px] max-h-32 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             rows={1}
           />
           
@@ -74,7 +74,7 @@ export default function ChatInput({ onSendMessage, isLoading, disabled = false }
             onClick={handleVoiceRecording}
             disabled={isLoading || disabled}
             className={`
-              absolute right-3 top-1/2 transform -translate-y-1/2 p-1 rounded transition-colors
+              absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 p-1 rounded transition-colors
               ${isRecording 
                 ? 'text-red-600 hover:text-red-700' 
                 : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
@@ -84,9 +84,9 @@ export default function ChatInput({ onSendMessage, isLoading, disabled = false }
             title={isRecording ? 'Stop recording' : 'Start voice recording'}
           >
             {isRecording ? (
-              <MicOff className="w-4 h-4" />
+              <MicOff className="w-3 h-3 sm:w-4 sm:h-4" />
             ) : (
-              <Mic className="w-4 h-4" />
+              <Mic className="w-3 h-3 sm:w-4 sm:h-4" />
             )}
           </button>
         </div>
@@ -95,13 +95,13 @@ export default function ChatInput({ onSendMessage, isLoading, disabled = false }
         <button
           onClick={handleSend}
           disabled={!inputValue.trim() || isLoading || disabled}
-          className="px-4 py-3 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center gap-2"
+          className="px-3 sm:px-4 py-2 sm:py-3 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center gap-1 sm:gap-2"
           title="Send message"
         >
           {isLoading ? (
             <LoadingSpinner size="sm" variant="icon" color="white" />
           ) : (
-            <Send className="w-5 h-5" />
+            <Send className="w-4 h-4 sm:w-5 sm:h-5" />
           )}
         </button>
       </div>

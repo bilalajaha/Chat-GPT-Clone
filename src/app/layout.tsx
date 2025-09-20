@@ -32,8 +32,6 @@ export default function RootLayout({
           <div id="root">
             {children}
           </div>
-          <ErrorNotification />
-          <LoadingOverlay />
           <NetworkStatus />
         </ErrorBoundary>
       </body>

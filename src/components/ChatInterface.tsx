@@ -3,24 +3,25 @@
 import { useState, useEffect } from 'react';
 import ChatSidebar from './ChatSidebar';
 import ChatArea from './ChatArea';
+import { useResponsive } from '@/hooks/useResponsive';
 
 export default function ChatInterface() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
+  const { isMobile, isTablet, isDesktop } = useResponsive();
 
   // Handle responsive behavior
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-      if (window.innerWidth < 768) {
-        setSidebarOpen(false);
-      }
-    };
-
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+    // Auto-close sidebar on mobile, keep open on desktop
+    if (isMobile) {
+      setSidebarOpen(false);
+    } else if (isTablet) {
+      // On tablet, start with sidebar closed but allow manual toggle
+      setSidebarOpen(false);
+    } else if (isDesktop) {
+      // On desktop, start with sidebar open
+      setSidebarOpen(true);
+    }
+  }, [isMobile, isTablet, isDesktop]);
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -44,6 +45,7 @@ export default function ChatInterface() {
         bg-white dark:bg-gray-800
         border-r border-gray-200 dark:border-gray-700
         ${isMobile ? 'fixed inset-y-0 left-0 z-50' : 'relative'}
+        ${!sidebarOpen && !isMobile ? 'hidden' : ''}
       `}>
         <ChatSidebar 
           onToggle={toggleSidebar}

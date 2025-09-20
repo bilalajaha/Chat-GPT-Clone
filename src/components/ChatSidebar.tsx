@@ -124,53 +124,54 @@ export default function ChatSidebar({ onToggle, isMobile }: ChatSidebarProps) {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
-          <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          <h1 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
             ChatGPT Clone
           </h1>
           <button
             onClick={onToggle}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors flex-shrink-0"
           >
-            <Menu className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <Menu className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-400" />
           </button>
         </div>
       </div>
 
       {/* New Chat Button */}
-      <div className="p-4">
+      <div className="p-3 sm:p-4">
         <button 
           onClick={handleNewChat}
-          className="w-full flex items-center gap-3 p-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
+          className="w-full flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors text-sm sm:text-base"
           title="New Chat (Ctrl+N)"
         >
-          <Plus className="w-5 h-5" />
-          New Chat
+          <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+          <span className="hidden sm:inline">New Chat</span>
+          <span className="sm:hidden">New</span>
         </button>
       </div>
 
       {/* Search */}
-      <div className="px-4 pb-4">
+      <div className="px-3 sm:px-4 pb-3 sm:pb-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
           <input
             type="text"
             placeholder="Search chats..."
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
-            className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
+            className="w-full pl-8 sm:pl-10 pr-2 sm:pr-3 py-1.5 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-xs sm:text-sm"
           />
         </div>
       </div>
 
       {/* Chat List */}
-      <div className="flex-1 overflow-y-auto px-4">
+      <div className="flex-1 overflow-y-auto px-3 sm:px-4">
         <div className="space-y-1">
           {filteredChats.length === 0 ? (
-            <div className="flex items-center gap-3 p-3 text-gray-500 dark:text-gray-400">
-              <MessageSquare className="w-5 h-5" />
-              <span className="text-sm">
+            <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 text-gray-500 dark:text-gray-400">
+              <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+              <span className="text-xs sm:text-sm">
                 {searchQuery ? 'No chats found' : 'No chats yet'}
               </span>
             </div>
@@ -179,7 +180,7 @@ export default function ChatSidebar({ onToggle, isMobile }: ChatSidebarProps) {
               <div
                 key={chat.id}
                 className={`
-                  group flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors
+                  group flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg cursor-pointer transition-colors
                   ${currentChat?.id === chat.id 
                     ? 'bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800' 
                     : 'hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -187,7 +188,7 @@ export default function ChatSidebar({ onToggle, isMobile }: ChatSidebarProps) {
                 `}
                 onClick={() => handleChatSelect(chat)}
               >
-                <MessageSquare className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                   {editingChatId === chat.id ? (
                     <input
@@ -203,15 +204,15 @@ export default function ChatSidebar({ onToggle, isMobile }: ChatSidebarProps) {
                           setEditingTitle('');
                         }
                       }}
-                      className="w-full bg-transparent border-none outline-none text-sm font-medium text-gray-900 dark:text-gray-100"
+                      className="w-full bg-transparent border-none outline-none text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100"
                       autoFocus
                     />
                   ) : (
-                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                      {truncateText(chat.title, 20)}
+                    <div className="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                      {truncateText(chat.title, isMobile ? 15 : 20)}
                     </div>
                   )}
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                  <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
                     {formatChatDate(chat.updatedAt)}
                   </div>
                 </div>
@@ -219,9 +220,9 @@ export default function ChatSidebar({ onToggle, isMobile }: ChatSidebarProps) {
                   <div className="relative">
                     <button
                       onClick={(e) => handleDropdownToggle(chat.id, e)}
-                      className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
+                      className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded flex-shrink-0"
                     >
-                      <MoreVertical className="w-4 h-4 text-gray-400" />
+                      <MoreVertical className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
                     </button>
                     
                     {/* Dropdown menu */}
@@ -252,19 +253,19 @@ export default function ChatSidebar({ onToggle, isMobile }: ChatSidebarProps) {
       </div>
 
       {/* Footer */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="p-3 sm:p-4 border-t border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-500 dark:text-gray-400">
+          <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate">
             ChatGPT Clone v1.0
           </div>
           {chats.length > 0 && (
             <button
               onClick={handleClearAllChats}
-              className="text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 flex items-center gap-1"
+              className="text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 flex items-center gap-1 flex-shrink-0"
               title="Clear all chats"
             >
               <Trash className="w-3 h-3" />
-              Clear All
+              <span className="hidden sm:inline">Clear All</span>
             </button>
           )}
         </div>
