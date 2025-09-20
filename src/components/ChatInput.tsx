@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Paperclip, Mic, MicOff } from 'lucide-react';
+import { Send, Paperclip, Mic, MicOff, Loader2 } from 'lucide-react';
 import { ChatInputProps } from '@/types';
+import LoadingSpinner from './LoadingSpinner';
 
 export default function ChatInput({ onSendMessage, isLoading, disabled = false }: ChatInputProps) {
   const [inputValue, setInputValue] = useState('');
@@ -94,10 +95,14 @@ export default function ChatInput({ onSendMessage, isLoading, disabled = false }
         <button
           onClick={handleSend}
           disabled={!inputValue.trim() || isLoading || disabled}
-          className="px-4 py-3 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+          className="px-4 py-3 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center gap-2"
           title="Send message"
         >
-          <Send className="w-5 h-5" />
+          {isLoading ? (
+            <LoadingSpinner size="sm" variant="icon" color="white" />
+          ) : (
+            <Send className="w-5 h-5" />
+          )}
         </button>
       </div>
 

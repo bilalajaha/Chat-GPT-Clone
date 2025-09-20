@@ -4,11 +4,14 @@ import { useState, useRef, useEffect } from 'react';
 import { Menu, Bot } from 'lucide-react';
 import { useChatState } from '@/hooks/useChatState';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
+import { useAppState } from '@/hooks/useAppState';
 import { useChatAPI } from '@/hooks/useChatAPI';
 import { Message } from '@/types';
 import MessageBubble from './MessageBubble';
 import TypingIndicator from './TypingIndicator';
 import ChatInput from './ChatInput';
+import LoadingSpinner from './LoadingSpinner';
+import RetryButton from './RetryButton';
 
 interface ChatAreaProps {
   sidebarOpen: boolean;
@@ -18,7 +21,8 @@ interface ChatAreaProps {
 
 export default function ChatArea({ sidebarOpen, onToggleSidebar, isMobile }: ChatAreaProps) {
   const { currentChat, addMessage, updateMessage, generateTitleFromFirstMessage } = useChatState();
-  const { handleApiError, clearError } = useErrorHandler();
+  const { handleApiError, clearError, hasError, getUserFriendlyMessage } = useErrorHandler();
+  const { setLoading } = useAppState();
   const { sendStreamingMessage, isLoading, error } = useChatAPI();
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -60,6 +64,7 @@ export default function ChatArea({ sidebarOpen, onToggleSidebar, isMobile }: Cha
     });
 
     setIsTyping(true);
+    setLoading('api', true);
 
     try {
       // Prepare messages for API call
@@ -91,6 +96,7 @@ export default function ChatArea({ sidebarOpen, onToggleSidebar, isMobile }: Cha
       updateMessage(currentChat.id, aiMessage.id, 'Sorry, I encountered an error. Please try again.', false);
     } finally {
       setIsTyping(false);
+      setLoading('api', false);
     }
   };
 
@@ -138,6 +144,21 @@ export default function ChatArea({ sidebarOpen, onToggleSidebar, isMobile }: Cha
               <p className="text-gray-600 dark:text-gray-400 mb-6">
                 Start a conversation by typing a message below.
               </p>
+              
+              {/* Error state */}
+              {hasError() && (
+                <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                  <p className="text-red-800 dark:text-red-200 mb-3">
+                    {getUserFriendlyMessage()}
+                  </p>
+                  <RetryButton 
+                    onRetry={clearError}
+                    size="sm"
+                    variant="danger"
+                  />
+                </div>
+              )}
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
                 <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                   <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">Ask anything</h4>
