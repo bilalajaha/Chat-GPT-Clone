@@ -1,12 +1,66 @@
 'use client';
 
-import { Menu, Plus, MessageSquare } from 'lucide-react';
+import { useState } from 'react';
+import { Menu, Plus, MessageSquare, MoreVertical, Edit2, Trash2, Search } from 'lucide-react';
+import { useChat } from '@/context/ChatContext';
+import { Chat } from '@/types';
+import { formatChatDate, truncateText } from '@/utils';
 
 interface ChatSidebarProps {
   onToggle: () => void;
+  isMobile: boolean;
 }
 
-export default function ChatSidebar({ onToggle }: ChatSidebarProps) {
+export default function ChatSidebar({ onToggle, isMobile }: ChatSidebarProps) {
+  const { state, dispatch } = useChat();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [editingChatId, setEditingChatId] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState('');
+
+  const handleNewChat = () => {
+    const newChat: Chat = {
+      id: `chat-${Date.now()}`,
+      title: 'New Chat',
+      messages: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    dispatch({ type: 'ADD_CHAT', payload: newChat });
+    if (isMobile) {
+      onToggle();
+    }
+  };
+
+  const handleChatSelect = (chat: Chat) => {
+    dispatch({ type: 'SET_CURRENT_CHAT', payload: chat });
+    if (isMobile) {
+      onToggle();
+    }
+  };
+
+  const handleDeleteChat = (chatId: string) => {
+    if (confirm('Are you sure you want to delete this chat?')) {
+      dispatch({ type: 'DELETE_CHAT', payload: chatId });
+    }
+  };
+
+  const handleRenameChat = (chatId: string, newTitle: string) => {
+    if (newTitle.trim()) {
+      dispatch({ type: 'RENAME_CHAT', payload: { chatId, title: newTitle.trim() } });
+    }
+    setEditingChatId(null);
+    setEditingTitle('');
+  };
+
+  const startEditing = (chat: Chat) => {
+    setEditingChatId(chat.id);
+    setEditingTitle(chat.title);
+  };
+
+  const filteredChats = state.chats.filter(chat =>
+    chat.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
@@ -26,20 +80,97 @@ export default function ChatSidebar({ onToggle }: ChatSidebarProps) {
 
       {/* New Chat Button */}
       <div className="p-4">
-        <button className="w-full flex items-center gap-3 p-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors">
+        <button 
+          onClick={handleNewChat}
+          className="w-full flex items-center gap-3 p-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
+        >
           <Plus className="w-5 h-5" />
           New Chat
         </button>
       </div>
 
+      {/* Search */}
+      <div className="px-4 pb-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search chats..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
+          />
+        </div>
+      </div>
+
       {/* Chat List */}
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="space-y-2">
-          {/* Placeholder for chat list */}
-          <div className="flex items-center gap-3 p-3 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg cursor-pointer">
-            <MessageSquare className="w-5 h-5 text-gray-400" />
-            <span className="text-gray-600 dark:text-gray-400">No chats yet</span>
-          </div>
+      <div className="flex-1 overflow-y-auto px-4">
+        <div className="space-y-1">
+          {filteredChats.length === 0 ? (
+            <div className="flex items-center gap-3 p-3 text-gray-500 dark:text-gray-400">
+              <MessageSquare className="w-5 h-5" />
+              <span className="text-sm">
+                {searchQuery ? 'No chats found' : 'No chats yet'}
+              </span>
+            </div>
+          ) : (
+            filteredChats.map((chat) => (
+              <div
+                key={chat.id}
+                className={`
+                  group flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors
+                  ${state.currentChat?.id === chat.id 
+                    ? 'bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800' 
+                    : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }
+                `}
+                onClick={() => handleChatSelect(chat)}
+              >
+                <MessageSquare className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  {editingChatId === chat.id ? (
+                    <input
+                      type="text"
+                      value={editingTitle}
+                      onChange={(e) => setEditingTitle(e.target.value)}
+                      onBlur={() => handleRenameChat(chat.id, editingTitle)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleRenameChat(chat.id, editingTitle);
+                        } else if (e.key === 'Escape') {
+                          setEditingChatId(null);
+                          setEditingTitle('');
+                        }
+                      }}
+                      className="w-full bg-transparent border-none outline-none text-sm font-medium text-gray-900 dark:text-gray-100"
+                      autoFocus
+                    />
+                  ) : (
+                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {truncateText(chat.title, 20)}
+                    </div>
+                  )}
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    {formatChatDate(chat.updatedAt)}
+                  </div>
+                </div>
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="relative">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Toggle dropdown or show menu
+                      }}
+                      className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
+                    >
+                      <MoreVertical className="w-4 h-4 text-gray-400" />
+                    </button>
+                    {/* Dropdown menu would go here */}
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
