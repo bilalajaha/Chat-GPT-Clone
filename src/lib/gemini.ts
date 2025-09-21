@@ -1,152 +1,119 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { ChatCompletionRequest, ChatCompletionResponse, GeminiRequest, GeminiResponse } from '@/types';
-
-// Import config
-const config = require('../../config.js');
-
-// Initialize Gemini client
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || config.GEMINI_API_KEY || '');
-
-// Convert OpenAI format to Gemini format
-function convertToGeminiFormat(request: ChatCompletionRequest): GeminiRequest {
-  const contents = request.messages
-    .filter(msg => msg.role !== 'system') // Gemini doesn't support system messages in the same way
-    .map(msg => ({
-      role: msg.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: msg.content }]
-    }));
-
-  return {
-    contents,
-    generationConfig: {
-      temperature: request.temperature || 0.7,
-      maxOutputTokens: request.max_tokens || 1000,
-      topP: 0.8,
-      topK: 40,
-    },
-    safetySettings: [
-      {
-        category: 'HARM_CATEGORY_HARASSMENT',
-        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
-      },
-      {
-        category: 'HARM_CATEGORY_HATE_SPEECH',
-        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
-      },
-      {
-        category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
-      },
-      {
-        category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
-      },
-    ],
-  };
+export interface ChatMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
 }
 
-// Convert Gemini response to OpenAI format
-function convertFromGeminiFormat(geminiResponse: GeminiResponse, model: string): ChatCompletionResponse {
-  const candidate = geminiResponse.candidates[0];
-  const content = candidate?.content?.parts?.[0]?.text || '';
-  
-  return {
-    id: `gemini-${Date.now()}`,
-    object: 'chat.completion',
-    created: Math.floor(Date.now() / 1000),
-    model,
-    choices: [
-      {
-        index: 0,
-        message: {
-          role: 'assistant',
-          content,
-        },
-        finish_reason: candidate?.finishReason || 'stop',
-      },
-    ],
-    usage: {
-      prompt_tokens: geminiResponse.usageMetadata.promptTokenCount,
-      completion_tokens: geminiResponse.usageMetadata.candidatesTokenCount,
-      total_tokens: geminiResponse.usageMetadata.totalTokenCount,
-    },
-  };
+export interface ChatCompletionOptions {
+  model?: string;
+  temperature?: number;
+  maxTokens?: number;
+  stream?: boolean;
 }
 
-// Chat completion function
-export async function createChatCompletion(
-  request: ChatCompletionRequest
-): Promise<ChatCompletionResponse> {
-  try {
-    const model = genAI.getGenerativeModel({ 
-      model: request.model || 'gemini-pro',
-    });
-    
-    const geminiRequest = convertToGeminiFormat(request);
-    const result = await model.generateContent(geminiRequest);
-    const response = await result.response;
-    
-    const geminiResponse: GeminiResponse = {
-      candidates: [
-        {
-          content: {
-            parts: response.candidates[0]?.content?.parts || [],
-            role: 'model',
-          },
-          finishReason: response.candidates[0]?.finishReason || 'STOP',
-          index: 0,
-          safetyRatings: response.candidates[0]?.safetyRatings || [],
-        },
-      ],
-      usageMetadata: {
-        promptTokenCount: response.usageMetadata?.promptTokenCount || 0,
-        candidatesTokenCount: response.usageMetadata?.candidatesTokenCount || 0,
-        totalTokenCount: response.usageMetadata?.totalTokenCount || 0,
-      },
+export interface ChatCompletionResponse {
+  id: string;
+  object: string;
+  created: number;
+  model: string;
+  choices: Array<{
+    index: number;
+    message: {
+      role: string;
+      content: string;
     };
-
-    return convertFromGeminiFormat(geminiResponse, request.model || 'gemini-pro');
-  } catch (error) {
-    console.error('Gemini API Error:', error);
-    throw new Error('Failed to get response from AI');
-  }
+    finish_reason: string;
+  }>;
+  usage: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  };
 }
 
-// Streaming chat completion function
+export async function createChatCompletion(
+  messages: ChatMessage[],
+  options: ChatCompletionOptions = {}
+): Promise<ChatCompletionResponse> {
+  const { model = 'gemini-pro', temperature = 0.7, maxTokens = 1000 } = options;
+
+  const response = await fetch('/api/chat', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      messages,
+      model,
+      temperature,
+      max_tokens: maxTokens,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`API request failed: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
 export async function* createStreamingChatCompletion(
-  request: ChatCompletionRequest
+  messages: ChatMessage[],
+  options: ChatCompletionOptions = {}
 ): AsyncGenerator<string, void, unknown> {
+  const { model = 'gemini-pro', temperature = 0.7, maxTokens = 1000 } = options;
+
+  const response = await fetch('/api/chat', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      messages,
+      model,
+      temperature,
+      max_tokens: maxTokens,
+      stream: true,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`API request failed: ${response.statusText}`);
+  }
+
+  const reader = response.body?.getReader();
+  if (!reader) {
+    throw new Error('No response body');
+  }
+
+  const decoder = new TextDecoder();
+  let buffer = '';
+
   try {
-    const model = genAI.getGenerativeModel({ 
-      model: request.model || 'gemini-pro',
-    });
-    
-    const geminiRequest = convertToGeminiFormat(request);
-    const result = await model.generateContentStream(geminiRequest);
-    
-    for await (const chunk of result.stream) {
-      const content = chunk.text();
-      if (content) {
-        yield content;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const data = line.slice(6);
+          if (data === '[DONE]') return;
+          
+          try {
+            const parsed = JSON.parse(data);
+            if (parsed.choices?.[0]?.delta?.content) {
+              yield parsed.choices[0].delta.content;
+            }
+          } catch (e) {
+            // Ignore parsing errors for streaming
+          }
+        }
       }
     }
-  } catch (error) {
-    console.error('Gemini Streaming Error:', error);
-    throw new Error('Failed to get streaming response from AI');
+  } finally {
+    reader.releaseLock();
   }
 }
-
-// Validate API key
-export function validateApiKey(apiKey: string): boolean {
-  return apiKey && apiKey.length > 20;
-}
-
-// Get available models
-export const AVAILABLE_MODELS = [
-  'gemini-pro',
-  'gemini-pro-vision',
-  'gemini-1.5-pro',
-  'gemini-1.5-flash',
-] as const;
-
-export type ModelType = typeof AVAILABLE_MODELS[number];

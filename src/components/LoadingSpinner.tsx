@@ -67,7 +67,7 @@ export default function LoadingSpinner({
   };
 
   return (
-    <div className={cn('flex flex-col items-center justify-center gap-2', className)}>
+    <div className={cn('flex flex-col items-center justify-center gap-2', className)} data-testid="loading-spinner">
       {renderSpinner()}
       {message && (
         <span className={cn('text-sm font-medium', colorClasses[color])}>

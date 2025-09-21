@@ -1,102 +1,79 @@
 'use client';
 
-import { useState } from 'react';
-import { Copy, RotateCcw, Trash2, MoreVertical, Check } from 'lucide-react';
+import React from 'react';
+import { RotateCcw, Trash2, Copy, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { Message } from '@/types';
-import { copyToClipboard } from '@/utils';
 
 interface MessageActionsProps {
   message: Message;
   onRegenerate?: () => void;
   onDelete?: () => void;
-  className?: string;
+  onCopy?: () => void;
+  onLike?: () => void;
+  onDislike?: () => void;
 }
 
-export default function MessageActions({ 
-  message, 
-  onRegenerate, 
-  onDelete, 
-  className = '' 
+export default function MessageActions({
+  message,
+  onRegenerate,
+  onDelete,
+  onCopy,
+  onLike,
+  onDislike,
 }: MessageActionsProps) {
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = async () => {
-    try {
-      await copyToClipboard(message.content);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
-      console.error('Failed to copy message:', error);
-    }
-    setShowDropdown(false);
-  };
-
-  const handleRegenerate = () => {
-    onRegenerate?.();
-    setShowDropdown(false);
-  };
-
-  const handleDelete = () => {
-    if (confirm('Are you sure you want to delete this message?')) {
-      onDelete?.();
-    }
-    setShowDropdown(false);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(message.content);
+    onCopy?.();
   };
 
   return (
-    <div className={`relative ${className}`}>
+    <div className="flex items-center gap-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-1">
+      {onRegenerate && (
+        <button
+          onClick={onRegenerate}
+          className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+          title="Regenerate response"
+        >
+          <RotateCcw className="w-3 h-3 text-gray-600 dark:text-gray-400" />
+        </button>
+      )}
+      
       <button
-        onClick={() => setShowDropdown(!showDropdown)}
-        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
-        title="Message actions"
+        onClick={handleCopy}
+        className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+        title="Copy message"
       >
-        <MoreVertical className="w-4 h-4 text-gray-500" />
+        <Copy className="w-3 h-3 text-gray-600 dark:text-gray-400" />
       </button>
-
-      {showDropdown && (
-        <>
-          {/* Backdrop */}
-          <div 
-            className="fixed inset-0 z-10" 
-            onClick={() => setShowDropdown(false)}
-          />
-          
-          {/* Dropdown */}
-          <div className="absolute right-0 top-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1 z-20 min-w-[140px]">
-            <button
-              onClick={handleCopy}
-              className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
-            >
-              {copied ? (
-                <Check className="w-4 h-4 text-green-500" />
-              ) : (
-                <Copy className="w-4 h-4" />
-              )}
-              {copied ? 'Copied!' : 'Copy'}
-            </button>
-            
-            {onRegenerate && message.role === 'user' && (
-              <button
-                onClick={handleRegenerate}
-                className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
-              >
-                <RotateCcw className="w-4 h-4" />
-                Regenerate
-              </button>
-            )}
-            
-            {onDelete && (
-              <button
-                onClick={handleDelete}
-                className="w-full px-3 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
-              >
-                <Trash2 className="w-4 h-4" />
-                Delete
-              </button>
-            )}
-          </div>
-        </>
+      
+      {onLike && (
+        <button
+          onClick={onLike}
+          className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+          title="Like message"
+        >
+          <ThumbsUp className="w-3 h-3 text-gray-600 dark:text-gray-400" />
+        </button>
+      )}
+      
+      {onDislike && (
+        <button
+          onClick={onDislike}
+          className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+          title="Dislike message"
+        >
+          <ThumbsDown className="w-3 h-3 text-gray-600 dark:text-gray-400" />
+        </button>
+      )}
+      
+      {onDelete && (
+        <button
+          onClick={onDelete}
+          className="p-1.5 hover:bg-red-100 dark:hover:bg-red-900/20 rounded transition-colors"
+          title="Delete message"
+        >
+          <Trash2 className="w-3 h-3 text-red-600 dark:text-red-400" />
+        </button>
       )}
     </div>
   );

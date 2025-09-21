@@ -40,24 +40,30 @@ export default function ChatArea({ sidebarOpen, onToggleSidebar, isMobile }: Cha
   }, [error, handleApiError]);
 
   const handleSendMessage = async (messageContent: string) => {
-    if (!messageContent.trim() || !currentChat) return;
+    if (!messageContent.trim()) return;
+    
+    // Auto-create chat if none exists
+    let chatToUse = currentChat;
+    if (!chatToUse) {
+      chatToUse = createNewChat();
+    }
 
     // Clear any existing errors
     clearError();
 
     // Add user message
-    const userMessage = addMessage(currentChat.id, {
+    const userMessage = addMessage(chatToUse.id, {
       content: messageContent.trim(),
       role: 'user',
     });
 
     // Generate chat title if this is the first message
-    if (currentChat.messages.length === 0) {
-      generateTitleFromFirstMessage(currentChat.id, messageContent.trim());
+    if (chatToUse.messages.length === 0) {
+      generateTitleFromFirstMessage(chatToUse.id, messageContent.trim());
     }
 
     // Create AI message placeholder for streaming
-    const aiMessage = addMessage(currentChat.id, {
+    const aiMessage = addMessage(chatToUse.id, {
       content: '',
       role: 'assistant',
       isStreaming: true,
@@ -69,7 +75,7 @@ export default function ChatArea({ sidebarOpen, onToggleSidebar, isMobile }: Cha
     try {
       // Prepare messages for API call
       const messages = [
-        ...currentChat.messages.map(msg => ({
+        ...chatToUse.messages.map(msg => ({
           role: msg.role as 'user' | 'assistant' | 'system',
           content: msg.content
         })),
@@ -82,11 +88,11 @@ export default function ChatArea({ sidebarOpen, onToggleSidebar, isMobile }: Cha
         fullResponse += chunk;
         
         // Update the AI message with the streaming content
-        updateMessage(currentChat.id, aiMessage.id, fullResponse, true);
+        updateMessage(chatToUse.id, aiMessage.id, fullResponse, true);
       }
 
       // Mark streaming as complete
-      updateMessage(currentChat.id, aiMessage.id, fullResponse, false);
+      updateMessage(chatToUse.id, aiMessage.id, fullResponse, false);
 
     } catch (error) {
       console.error('Error sending message:', error);
@@ -189,7 +195,7 @@ export default function ChatArea({ sidebarOpen, onToggleSidebar, isMobile }: Cha
           <ChatInput
             onSendMessage={handleSendMessage}
             isLoading={isTyping}
-            disabled={!currentChat}
+            disabled={false}
           />
         </div>
       </div>

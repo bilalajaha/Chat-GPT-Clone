@@ -4,7 +4,7 @@ import '@/styles/globals.css';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import ErrorNotification from '@/components/ErrorNotification';
 import LoadingOverlay from '@/components/LoadingOverlay';
-import NetworkStatus from '@/components/NetworkStatus';
+import { NetworkStatus } from '@/components/NetworkStatus';
 import { ChatProvider } from '@/context/ChatContext';
 import ThemeProvider from '@/components/ThemeProvider';
 

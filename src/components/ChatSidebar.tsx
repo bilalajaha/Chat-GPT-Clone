@@ -31,9 +31,9 @@ export default function ChatSidebar({ onToggle, isMobile }: ChatSidebarProps) {
   const { 
     state,
     setSearchQuery, 
-    setEditingChatId, 
     setSidebarOpen 
   } = useAppState();
+  const [editingChatId, setEditingChatId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState('');
   const [showDropdown, setShowDropdown] = useState<string | null>(null);
   const [showDataManagement, setShowDataManagement] = useState(false);

@@ -129,29 +129,29 @@ export function useErrorHandler() {
 
   // Check if error is retryable
   const isRetryable = useCallback(() => {
-    return state.error.retryable;
-  }, [state.error.retryable]);
+    return state.error?.retryable || false;
+  }, [state.error?.retryable]);
 
   // Get error message
   const getErrorMessage = useCallback(() => {
-    return state.error.message;
-  }, [state.error.message]);
+    return state.error?.message || '';
+  }, [state.error?.message]);
 
   // Get error type
   const getErrorType = useCallback(() => {
-    return state.error.type;
-  }, [state.error.type]);
+    return state.error?.type || 'api';
+  }, [state.error?.type]);
 
   // Check if there's an error
   const hasError = useCallback(() => {
-    return !!state.error.message;
-  }, [state.error.message]);
+    return !!state.error?.message;
+  }, [state.error?.message]);
 
   // Get user-friendly error message
   const getUserFriendlyMessage = useCallback(() => {
-    if (!state.error.message) return null;
+    if (!state.error?.message) return null;
 
-    switch (state.error.type) {
+    switch (state.error?.type) {
       case 'api':
         return state.error.message;
       case 'network':

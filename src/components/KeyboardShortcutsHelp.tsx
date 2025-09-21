@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Command, Control } from 'lucide-react';
+import { X, Command } from 'lucide-react';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
 interface KeyboardShortcutsHelpProps {
@@ -74,7 +74,7 @@ export default function KeyboardShortcutsHelp({ onClose }: KeyboardShortcutsHelp
                 {isMac ? (
                   <Command className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 ) : (
-                  <Control className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <Command className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 )}
               </div>
               <div className="text-sm text-blue-700 dark:text-blue-300">
