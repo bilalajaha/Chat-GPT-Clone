@@ -15,7 +15,7 @@ interface KeyboardShortcut {
 }
 
 export function useKeyboardShortcuts() {
-  const { state, toggleTheme, setSidebarOpen } = useAppState();
+  const { state, toggleTheme, toggleSidebar } = useAppState();
   const { createNewChat, clearAllChats } = useChatState();
 
   const shortcuts: KeyboardShortcut[] = [
@@ -34,13 +34,13 @@ export function useKeyboardShortcuts() {
     {
       key: 'k',
       ctrlKey: true,
-      action: () => setSidebarOpen(!state.ui.sidebarOpen),
+      action: () => toggleSidebar(),
       description: 'Toggle sidebar',
     },
     {
       key: 'k',
       metaKey: true,
-      action: () => setSidebarOpen(!state.ui.sidebarOpen),
+      action: () => toggleSidebar(),
       description: 'Toggle sidebar',
     },
     {

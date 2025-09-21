@@ -19,7 +19,7 @@ interface AdvancedSearchProps {
 
 export default function AdvancedSearch({ onClose }: AdvancedSearchProps) {
   const { chats, selectChat } = useChatState();
-  const { setSidebarOpen } = useAppState();
+  const { toggleSidebar } = useAppState();
   const [query, setQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [filters, setFilters] = useState({
@@ -108,7 +108,7 @@ export default function AdvancedSearch({ onClose }: AdvancedSearchProps) {
 
   const handleChatSelect = (chat: Chat) => {
     selectChat(chat);
-    setSidebarOpen(false);
+    toggleSidebar();
     onClose();
   };
 

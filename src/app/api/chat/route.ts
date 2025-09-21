@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createChatCompletion, createStreamingChatCompletion } from '@/lib/gemini';
+import { createChatCompletion, createStreamingChatCompletion } from '@/lib/openai';
 import { ChatCompletionRequest } from '@/types';
 
 export async function POST(request: NextRequest) {
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
 
     const chatRequest: ChatCompletionRequest = {
       messages,
-      model: model || 'gemini-pro',
+      model: model || 'gemini-1.5-flash',
       temperature: temperature || 0.7,
       max_tokens: max_tokens || 1000,
       stream: stream || false,
@@ -73,6 +73,6 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   return NextResponse.json({ 
     message: 'Chat API endpoint is running',
-    models: ['gemini-pro', 'gemini-pro-vision', 'gemini-1.5-pro', 'gemini-1.5-flash']
+    models: ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro-vision']
   });
 }

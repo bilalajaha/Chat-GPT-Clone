@@ -489,7 +489,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       // Only restore non-sensitive UI state
       const { showSettings, showAbout, ...restUI } = savedUI;
       Object.entries(restUI).forEach(([key, value]) => {
-        dispatch({ type: `SET_${key.toUpperCase()}` as any, payload: value });
+        dispatch({ type: `SET_${key.toUpperCase()}` as any, payload: value as any });
       });
     }
   }, []);

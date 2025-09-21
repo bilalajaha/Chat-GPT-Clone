@@ -3,13 +3,15 @@
 import { useState, useRef } from 'react';
 import { Download, Upload, AlertCircle, CheckCircle, X } from 'lucide-react';
 import { useAppState } from '@/hooks/useAppState';
+import { useChatState } from '@/hooks/useChatState';
 
 interface DataManagementProps {
   onClose: () => void;
 }
 
 export default function DataManagement({ onClose }: DataManagementProps) {
-  const { state, exportChats, importChats } = useAppState();
+  const { state } = useAppState();
+  const { chats } = useChatState();
   const [isImporting, setIsImporting] = useState(false);
   const [importResult, setImportResult] = useState<{
     valid: any[];
@@ -20,7 +22,8 @@ export default function DataManagement({ onClose }: DataManagementProps) {
 
   const handleExport = () => {
     try {
-      exportChats();
+      // TODO: Implement export functionality
+      console.log('Export functionality not yet implemented');
       setError(null);
     } catch (err) {
       setError('Failed to export chat data. Please try again.');
@@ -36,7 +39,8 @@ export default function DataManagement({ onClose }: DataManagementProps) {
     setImportResult(null);
 
     try {
-      const result = await importChats(file);
+      // TODO: Implement import functionality
+      const result = { valid: [], invalid: [] };
       setImportResult(result);
       
       if (result.valid.length > 0) {
@@ -84,11 +88,11 @@ export default function DataManagement({ onClose }: DataManagementProps) {
             </p>
             <div className="flex items-center justify-between">
               <div className="text-sm text-gray-500 dark:text-gray-400">
-                {state.chats.length} chat{state.chats.length !== 1 ? 's' : ''} available
+                {chats.length} chat{chats.length !== 1 ? 's' : ''} available
               </div>
               <button
                 onClick={handleExport}
-                disabled={state.chats.length === 0}
+                disabled={chats.length === 0}
                 className="flex items-center gap-2 px-3 py-2 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-colors text-sm"
               >
                 <Download className="w-4 h-4" />

@@ -20,7 +20,7 @@ interface ChatAreaProps {
 }
 
 export default function ChatArea({ sidebarOpen, onToggleSidebar, isMobile }: ChatAreaProps) {
-  const { currentChat, addMessage, updateMessage, generateTitleFromFirstMessage } = useChatState();
+  const { currentChat, addMessage, updateMessage, generateTitleFromFirstMessage, createNewChat } = useChatState();
   const { handleApiError, clearError, hasError, getUserFriendlyMessage } = useErrorHandler();
   const { setLoading } = useAppState();
   const { sendStreamingMessage, isLoading, error } = useChatAPI();
@@ -70,7 +70,7 @@ export default function ChatArea({ sidebarOpen, onToggleSidebar, isMobile }: Cha
     });
 
     setIsTyping(true);
-    setLoading('api', true);
+    setLoading(true);
 
     try {
       // Prepare messages for API call
@@ -99,10 +99,10 @@ export default function ChatArea({ sidebarOpen, onToggleSidebar, isMobile }: Cha
       handleApiError(error, 'Failed to send message');
       
       // Update AI message with error
-      updateMessage(currentChat.id, aiMessage.id, 'Sorry, I encountered an error. Please try again.', false);
+      updateMessage(chatToUse.id, aiMessage.id, 'Sorry, I encountered an error. Please try again.', false);
     } finally {
       setIsTyping(false);
-      setLoading('api', false);
+      setLoading(false);
     }
   };
 

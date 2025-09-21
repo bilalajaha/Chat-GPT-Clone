@@ -52,7 +52,7 @@ export default function TypingIndicator({
           </div>
           
           {/* Additional status */}
-          {state.loading.api && (
+          {state.loading.global && (
             <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
               Connecting to AI service...
             </div>

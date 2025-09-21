@@ -9,7 +9,7 @@ function convertToGeminiFormat(request: ChatCompletionRequest): GeminiRequest {
   const contents = request.messages
     .filter(msg => msg.role !== 'system') // Gemini doesn't support system messages in the same way
     .map(msg => ({
-      role: msg.role === 'assistant' ? 'model' : 'user',
+      role: (msg.role === 'assistant' ? 'model' : 'user') as 'user' | 'model',
       parts: [{ text: msg.content }]
     }));
 
@@ -23,20 +23,20 @@ function convertToGeminiFormat(request: ChatCompletionRequest): GeminiRequest {
     },
     safetySettings: [
       {
-        category: 'HARM_CATEGORY_HARASSMENT',
-        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+        category: 'HARM_CATEGORY_HARASSMENT' as any,
+        threshold: 'BLOCK_MEDIUM_AND_ABOVE' as any,
       },
       {
-        category: 'HARM_CATEGORY_HATE_SPEECH',
-        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+        category: 'HARM_CATEGORY_HATE_SPEECH' as any,
+        threshold: 'BLOCK_MEDIUM_AND_ABOVE' as any,
       },
       {
-        category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+        category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT' as any,
+        threshold: 'BLOCK_MEDIUM_AND_ABOVE' as any,
       },
       {
-        category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+        category: 'HARM_CATEGORY_DANGEROUS_CONTENT' as any,
+        threshold: 'BLOCK_MEDIUM_AND_ABOVE' as any,
       },
     ],
   };
@@ -76,23 +76,23 @@ export async function createChatCompletion(
 ): Promise<ChatCompletionResponse> {
   try {
     const model = genAI.getGenerativeModel({ 
-      model: request.model || 'gemini-pro',
+      model: request.model || 'gemini-1.5-flash',
     });
     
     const geminiRequest = convertToGeminiFormat(request);
-    const result = await model.generateContent(geminiRequest);
+    const result = await model.generateContent(geminiRequest as any);
     const response = await result.response;
     
     const geminiResponse: GeminiResponse = {
       candidates: [
         {
           content: {
-            parts: response.candidates[0]?.content?.parts || [],
+            parts: (response.candidates?.[0]?.content?.parts || []) as { text: string }[],
             role: 'model',
           },
-          finishReason: response.candidates[0]?.finishReason || 'STOP',
+          finishReason: response.candidates?.[0]?.finishReason || 'STOP',
           index: 0,
-          safetyRatings: response.candidates[0]?.safetyRatings || [],
+          safetyRatings: response.candidates?.[0]?.safetyRatings || [],
         },
       ],
       usageMetadata: {
@@ -115,11 +115,11 @@ export async function* createStreamingChatCompletion(
 ): AsyncGenerator<string, void, unknown> {
   try {
     const model = genAI.getGenerativeModel({ 
-      model: request.model || 'gemini-pro',
+      model: request.model || 'gemini-1.5-flash',
     });
     
     const geminiRequest = convertToGeminiFormat(request);
-    const result = await model.generateContentStream(geminiRequest);
+    const result = await model.generateContentStream(geminiRequest as any);
     
     for await (const chunk of result.stream) {
       const content = chunk.text();
@@ -135,15 +135,14 @@ export async function* createStreamingChatCompletion(
 
 // Validate API key
 export function validateApiKey(apiKey: string): boolean {
-  return apiKey && apiKey.length > 20;
+  return !!(apiKey && apiKey.length > 20);
 }
 
 // Get available models
 export const AVAILABLE_MODELS = [
-  'gemini-pro',
-  'gemini-pro-vision',
-  'gemini-1.5-pro',
   'gemini-1.5-flash',
+  'gemini-1.5-pro',
+  'gemini-pro-vision',
 ] as const;
 
 export type ModelType = typeof AVAILABLE_MODELS[number];

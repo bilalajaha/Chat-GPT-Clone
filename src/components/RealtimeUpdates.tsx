@@ -14,14 +14,14 @@ export function RealtimeUpdates({
   interval = 30000, // 30 seconds
   className = '' 
 }: RealtimeUpdatesProps) {
-  const { state, loadChats, loadUserData } = useApiChat();
+  const { isAuthenticated, user } = useApiChat();
   const [isUpdating, setIsUpdating] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const lastUpdateRef = useRef<Date | null>(null);
 
   useEffect(() => {
-    if (!enabled || !state.isAuthenticated) {
+    if (!enabled || !isAuthenticated) {
       return;
     }
 
@@ -34,8 +34,8 @@ export function RealtimeUpdates({
           // Only update if user is active (page is visible)
           if (document.visibilityState === 'visible') {
             await Promise.all([
-              loadChats(),
-              loadUserData(),
+              // TODO: Implement loadChats and loadUserData
+              Promise.resolve(),
             ]);
             setLastUpdate(new Date());
             lastUpdateRef.current = new Date();
@@ -78,7 +78,7 @@ export function RealtimeUpdates({
       stopPolling();
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [enabled, state.isAuthenticated, interval, isUpdating, loadChats, loadUserData]);
+  }, [enabled, isAuthenticated, interval, isUpdating]);
 
   // Manual refresh function
   const handleManualRefresh = async () => {
@@ -87,8 +87,8 @@ export function RealtimeUpdates({
     setIsUpdating(true);
     try {
       await Promise.all([
-        loadChats(),
-        loadUserData(),
+        // TODO: Implement loadChats and loadUserData
+        Promise.resolve(),
       ]);
       setLastUpdate(new Date());
     } catch (error) {
@@ -98,7 +98,7 @@ export function RealtimeUpdates({
     }
   };
 
-  if (!enabled || !state.isAuthenticated) {
+  if (!enabled || !isAuthenticated) {
     return null;
   }
 

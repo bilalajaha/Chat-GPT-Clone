@@ -11,11 +11,6 @@ interface SettingsProps {
 export default function Settings({ onClose }: SettingsProps) {
   const { 
     state, 
-    updateSettings, 
-    updatePreferences, 
-    resetSettings, 
-    resetPreferences,
-    setTheme,
     toggleTheme 
   } = useAppState();
 
@@ -25,42 +20,29 @@ export default function Settings({ onClose }: SettingsProps) {
   
   // Form states
   const [formData, setFormData] = useState({
-    apiKey: state.settings.apiKey || '',
-    selectedModel: state.settings.selectedModel || 'gemini-pro',
-    temperature: state.settings.temperature || 0.7,
-    maxTokens: state.settings.maxTokens || 1000,
-    enableStreaming: state.settings.enableStreaming ?? true,
-    autoSave: state.settings.autoSave ?? true,
-    theme: state.preferences.theme || 'light',
-    soundEnabled: state.preferences.soundEnabled ?? true,
-    animationsEnabled: state.preferences.animationsEnabled ?? true,
-    defaultModel: state.preferences.defaultModel || 'gemini-pro',
-    language: state.preferences.language || 'en',
+    apiKey: '',
+    selectedModel: 'gemini-pro',
+    temperature: 0.7,
+    maxTokens: 1000,
+    enableStreaming: true,
+    autoSave: true,
+    theme: 'light',
+    soundEnabled: true,
+    animationsEnabled: true,
+    defaultModel: 'gemini-pro',
+    language: 'en',
   });
 
   // Track changes
   useEffect(() => {
-    const hasApiChanges = 
-      formData.apiKey !== (state.settings.apiKey || '') ||
-      formData.selectedModel !== state.settings.selectedModel ||
-      formData.temperature !== state.settings.temperature ||
-      formData.maxTokens !== state.settings.maxTokens ||
-      formData.enableStreaming !== state.settings.enableStreaming ||
-      formData.autoSave !== state.settings.autoSave;
-
-    const hasPreferenceChanges = 
-      formData.theme !== state.preferences.theme ||
-      formData.soundEnabled !== state.preferences.soundEnabled ||
-      formData.animationsEnabled !== state.preferences.animationsEnabled ||
-      formData.defaultModel !== state.preferences.defaultModel ||
-      formData.language !== state.preferences.language;
-
-    setHasChanges(hasApiChanges || hasPreferenceChanges);
-  }, [formData, state.settings, state.preferences]);
+    // TODO: Implement proper change tracking
+    setHasChanges(false);
+  }, [formData]);
 
   const handleSave = () => {
     // Update settings
-    updateSettings({
+    // TODO: Implement updateSettings
+    console.log('updateSettings not implemented:', {
       apiKey: formData.apiKey,
       selectedModel: formData.selectedModel,
       temperature: formData.temperature,
@@ -70,7 +52,8 @@ export default function Settings({ onClose }: SettingsProps) {
     });
 
     // Update preferences
-    updatePreferences({
+    // TODO: Implement updatePreferences
+    console.log('updatePreferences not implemented:', {
       theme: formData.theme,
       soundEnabled: formData.soundEnabled,
       animationsEnabled: formData.animationsEnabled,
@@ -79,8 +62,9 @@ export default function Settings({ onClose }: SettingsProps) {
     });
 
     // Apply theme immediately
-    if (formData.theme !== state.theme.mode) {
-      setTheme(formData.theme as 'light' | 'dark');
+    if (formData.theme !== state.theme) {
+      // TODO: Implement setTheme
+      console.log('setTheme not implemented:', formData.theme);
     }
 
     setHasChanges(false);
@@ -88,8 +72,8 @@ export default function Settings({ onClose }: SettingsProps) {
 
   const handleReset = () => {
     if (confirm('Are you sure you want to reset all settings to default? This action cannot be undone.')) {
-      resetSettings();
-      resetPreferences();
+      // TODO: Implement resetSettings and resetPreferences
+      console.log('resetSettings and resetPreferences not implemented');
       onClose();
     }
   };

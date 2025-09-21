@@ -15,7 +15,7 @@ export default function ThemeToggle({
   showLabel = false 
 }: ThemeToggleProps) {
   const { state, toggleTheme } = useAppState();
-  const isDark = state.theme.mode === 'dark';
+  const isDark = state.theme === 'dark';
 
   const sizeClasses = {
     sm: 'w-4 h-4',

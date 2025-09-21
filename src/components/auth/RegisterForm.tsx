@@ -9,7 +9,7 @@ interface RegisterFormProps {
 }
 
 export function RegisterForm({ onSwitchToLogin, onSuccess }: RegisterFormProps) {
-  const { register, state } = useApiChat();
+  const { register, loading, error } = useApiChat();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -150,10 +150,10 @@ export function RegisterForm({ onSwitchToLogin, onSuccess }: RegisterFormProps) 
 
           <button
             type="submit"
-            disabled={state.loading.api}
+            disabled={loading}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-2 px-4 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
-            {state.loading.api ? 'Creating Account...' : 'Create Account'}
+            {loading ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>
 

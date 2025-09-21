@@ -64,19 +64,19 @@ export default function LoadingOverlay({
           
           {/* Loading Details */}
           <div className="mt-4 space-y-2 text-sm text-gray-500 dark:text-gray-400">
-            {state.loading.api && (
+            {state.loading.global && (
               <div className="flex items-center justify-center gap-2">
                 <div className="w-2 h-2 bg-primary-600 rounded-full animate-pulse"></div>
                 <span>Connecting to AI...</span>
               </div>
             )}
-            {state.loading.chat && (
+            {state.isLoading && (
               <div className="flex items-center justify-center gap-2">
                 <div className="w-2 h-2 bg-primary-600 rounded-full animate-pulse"></div>
                 <span>Processing chat...</span>
               </div>
             )}
-            {state.loading.message && (
+            {state.isLoading && (
               <div className="flex items-center justify-center gap-2">
                 <div className="w-2 h-2 bg-primary-600 rounded-full animate-pulse"></div>
                 <span>Sending message...</span>

@@ -37,33 +37,11 @@ export default function ErrorNotification() {
   const errorMessage = getErrorMessage();
 
   const getErrorIcon = () => {
-    switch (errorType) {
-      case 'network':
-        return <WifiOff className="w-5 h-5" />;
-      case 'api':
-        return <AlertTriangle className="w-5 h-5" />;
-      case 'validation':
-        return <AlertTriangle className="w-5 h-5" />;
-      case 'storage':
-        return <AlertTriangle className="w-5 h-5" />;
-      default:
-        return <AlertTriangle className="w-5 h-5" />;
-    }
+    return <AlertTriangle className="w-5 h-5" />;
   };
 
   const getErrorColor = () => {
-    switch (errorType) {
-      case 'network':
-        return 'bg-yellow-50 border-yellow-200 text-yellow-800 dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-200';
-      case 'api':
-        return 'bg-red-50 border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-200';
-      case 'validation':
-        return 'bg-orange-50 border-orange-200 text-orange-800 dark:bg-orange-900/20 dark:border-orange-800 dark:text-orange-200';
-      case 'storage':
-        return 'bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-200';
-      default:
-        return 'bg-red-50 border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-200';
-    }
+    return 'bg-red-50 border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-200';
   };
 
   const handleRetry = async () => {
@@ -100,11 +78,7 @@ export default function ErrorNotification() {
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
               <h4 className="text-sm font-medium">
-                {errorType === 'network' && 'Connection Error'}
-                {errorType === 'api' && 'API Error'}
-                {errorType === 'validation' && 'Validation Error'}
-                {errorType === 'storage' && 'Storage Error'}
-                {!errorType && 'Error'}
+                API Error
               </h4>
               <button
                 onClick={handleDismiss}

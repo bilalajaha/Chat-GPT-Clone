@@ -63,11 +63,7 @@ export function useErrorHandler() {
       errorMessage = `${context}: ${errorMessage}`;
     }
 
-    setError({
-      message: errorMessage,
-      type: errorType,
-      retryable,
-    });
+    setError(errorMessage);
   }, [setError]);
 
   // Handle storage errors
@@ -79,31 +75,19 @@ export function useErrorHandler() {
       errorMessage = `${context}: ${errorMessage}`;
     }
 
-    setError({
-      message: errorMessage,
-      type: 'storage',
-      retryable: true,
-    });
+    setError(errorMessage);
   }, [setError]);
 
   // Handle validation errors
   const handleValidationError = useCallback((message: string, field?: string) => {
     const errorMessage = field ? `${field}: ${message}` : message;
     
-    setError({
-      message: errorMessage,
-      type: 'validation',
-      retryable: false,
-    });
+    setError(errorMessage);
   }, [setError]);
 
   // Handle generic errors
   const handleError = useCallback((message: string, type: 'api' | 'network' | 'validation' | 'storage' = 'api', retryable: boolean = false) => {
-    setError({
-      message,
-      type,
-      retryable,
-    });
+    setError(message);
   }, [setError]);
 
   // Retry mechanism
@@ -129,40 +113,30 @@ export function useErrorHandler() {
 
   // Check if error is retryable
   const isRetryable = useCallback(() => {
-    return state.error?.retryable || false;
-  }, [state.error?.retryable]);
+    return false; // Simplified for now
+  }, []);
 
   // Get error message
   const getErrorMessage = useCallback(() => {
-    return state.error?.message || '';
-  }, [state.error?.message]);
+    return state.error || '';
+  }, [state.error]);
 
   // Get error type
   const getErrorType = useCallback(() => {
-    return state.error?.type || 'api';
-  }, [state.error?.type]);
+    return 'api'; // Simplified for now
+  }, []);
 
   // Check if there's an error
   const hasError = useCallback(() => {
-    return !!state.error?.message;
-  }, [state.error?.message]);
+    return !!state.error;
+  }, [state.error]);
 
   // Get user-friendly error message
   const getUserFriendlyMessage = useCallback(() => {
-    if (!state.error?.message) return null;
+    if (!state.error) return null;
 
-    switch (state.error?.type) {
-      case 'api':
-        return state.error.message;
-      case 'network':
-        return 'Please check your internet connection and try again.';
-      case 'validation':
-        return state.error.message;
-      case 'storage':
-        return 'Unable to save data locally. Your changes may not persist.';
-      default:
-        return 'An unexpected error occurred. Please try again.';
-    }
+    // Simplified error message handling
+    return state.error;
   }, [state.error]);
 
   return {
