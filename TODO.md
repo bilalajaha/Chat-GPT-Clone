@@ -126,7 +126,7 @@ This document contains a comprehensive todo list for implementing a ChatGPT clon
 
 ### Phase 17: Deployment
 - [ ] **Set up deployment configuration** for Laravel backend
-- [ ] **Configure production database** (MySQL/PostgreSQL for production)
+- [ ] **Configure production database** (SQLite)
 - [ ] **Set up deployment** for Next.js frontend
 - [ ] **Configure environment variables** for production
 - [ ] **Set up CI/CD pipeline** for both frontend and backend

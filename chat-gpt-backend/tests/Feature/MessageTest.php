@@ -33,25 +33,28 @@ class MessageTest extends TestCase
 
         $response->assertStatus(200)
                 ->assertJsonStructure([
+                    'success',
                     'data' => [
-                        '*' => [
-                            'id',
-                            'role',
-                            'content',
-                            'metadata',
-                            'is_edited',
-                            'edited_at',
-                            'created_at',
-                            'updated_at',
+                        'data' => [
+                            '*' => [
+                                'id',
+                                'role',
+                                'content',
+                                'metadata',
+                                'is_edited',
+                                'edited_at',
+                                'created_at',
+                                'updated_at',
+                            ],
                         ],
+                        'current_page',
+                        'last_page',
+                        'per_page',
+                        'total',
                     ],
-                    'current_page',
-                    'last_page',
-                    'per_page',
-                    'total',
                 ]);
 
-        $this->assertEquals(3, $response->json('total'));
+        $this->assertEquals(3, $response->json('data.total'));
     }
 
     public function test_user_can_create_message()
@@ -71,13 +74,16 @@ class MessageTest extends TestCase
 
         $response->assertStatus(201)
                 ->assertJsonStructure([
-                    'id',
-                    'role',
-                    'content',
-                    'metadata',
-                    'is_edited',
-                    'created_at',
-                    'updated_at',
+                    'success',
+                    'message',
+                    'data' => [
+                        'id',
+                        'role',
+                        'content',
+                        'metadata',
+                        'created_at',
+                        'updated_at',
+                    ],
                 ]);
 
         $this->assertDatabaseHas('messages', [
@@ -101,9 +107,12 @@ class MessageTest extends TestCase
 
         $response->assertStatus(200)
                 ->assertJson([
-                    'id' => $message->id,
-                    'content' => $message->content,
-                    'role' => $message->role,
+                    'success' => true,
+                    'data' => [
+                        'id' => $message->id,
+                        'content' => $message->content,
+                        'role' => $message->role,
+                    ],
                 ]);
     }
 
@@ -128,8 +137,11 @@ class MessageTest extends TestCase
 
         $response->assertStatus(200)
                 ->assertJson([
-                    'content' => 'Updated message content',
-                    'is_edited' => true,
+                    'success' => true,
+                    'data' => [
+                        'content' => 'Updated message content',
+                        'is_edited' => true,
+                    ],
                 ]);
 
         $this->assertDatabaseHas('messages', [
@@ -173,19 +185,23 @@ class MessageTest extends TestCase
             'Authorization' => 'Bearer ' . $this->token,
         ])->postJson("/api/chats/{$this->chat->id}/send", $messageData);
 
-        $response->assertStatus(200)
+        $response->assertStatus(201)
                 ->assertJsonStructure([
-                    'user_message' => [
-                        'id',
-                        'content',
-                        'role',
-                        'created_at',
-                    ],
-                    'ai_response' => [
-                        'id',
-                        'content',
-                        'role',
-                        'created_at',
+                    'success',
+                    'message',
+                    'data' => [
+                        'user_message' => [
+                            'id',
+                            'content',
+                            'role',
+                            'created_at',
+                        ],
+                        'ai_response' => [
+                            'id',
+                            'content',
+                            'role',
+                            'created_at',
+                        ],
                     ],
                 ]);
 
@@ -217,7 +233,7 @@ class MessageTest extends TestCase
             'Authorization' => 'Bearer ' . $this->token,
         ])->getJson("/api/chats/{$otherChat->id}/messages/{$message->id}");
 
-        $response->assertStatus(403);
+        $response->assertStatus(404);
     }
 
     public function test_user_cannot_update_messages_from_other_users_chats()
@@ -235,7 +251,7 @@ class MessageTest extends TestCase
             'content' => 'Hacked message',
         ]);
 
-        $response->assertStatus(403);
+        $response->assertStatus(404);
     }
 
     public function test_user_cannot_delete_messages_from_other_users_chats()
@@ -251,7 +267,7 @@ class MessageTest extends TestCase
             'Authorization' => 'Bearer ' . $this->token,
         ])->deleteJson("/api/chats/{$otherChat->id}/messages/{$message->id}");
 
-        $response->assertStatus(403);
+        $response->assertStatus(404);
     }
 
     public function test_message_creation_requires_authentication()

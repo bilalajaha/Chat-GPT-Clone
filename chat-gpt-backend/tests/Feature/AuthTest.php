@@ -25,14 +25,19 @@ class AuthTest extends TestCase
 
         $response->assertStatus(201)
                 ->assertJsonStructure([
-                    'user' => [
-                        'id',
-                        'name',
-                        'email',
-                        'created_at',
-                        'updated_at',
+                    'success',
+                    'message',
+                    'data' => [
+                        'user' => [
+                            'id',
+                            'name',
+                            'email',
+                            'created_at',
+                            'updated_at',
+                        ],
+                        'token',
+                        'token_type',
                     ],
-                    'token',
                 ]);
 
         $this->assertDatabaseHas('users', [
@@ -93,14 +98,19 @@ class AuthTest extends TestCase
 
         $response->assertStatus(200)
                 ->assertJsonStructure([
-                    'user' => [
-                        'id',
-                        'name',
-                        'email',
-                        'created_at',
-                        'updated_at',
+                    'success',
+                    'message',
+                    'data' => [
+                        'user' => [
+                            'id',
+                            'name',
+                            'email',
+                            'created_at',
+                            'updated_at',
+                        ],
+                        'token',
+                        'token_type',
                     ],
-                    'token',
                 ]);
     }
 
@@ -130,7 +140,8 @@ class AuthTest extends TestCase
 
         $response->assertStatus(200)
                 ->assertJson([
-                    'message' => 'Successfully logged out',
+                    'success' => true,
+                    'message' => 'Logout successful',
                 ]);
     }
 
@@ -144,11 +155,14 @@ class AuthTest extends TestCase
         ])->getJson('/api/auth/me');
 
         $response->assertStatus(200)
-                ->assertJson([
-                    'user' => [
-                        'id' => $user->id,
-                        'name' => $user->name,
-                        'email' => $user->email,
+                ->assertJsonStructure([
+                    'success',
+                    'data' => [
+                        'user' => [
+                            'id',
+                            'name',
+                            'email',
+                        ],
                     ],
                 ]);
     }

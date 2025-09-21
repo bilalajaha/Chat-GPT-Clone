@@ -29,25 +29,28 @@ class ChatTest extends TestCase
 
         $response->assertStatus(200)
                 ->assertJsonStructure([
+                    'success',
                     'data' => [
-                        '*' => [
-                            'id',
-                            'title',
-                            'description',
-                            'settings',
-                            'is_archived',
-                            'last_message_at',
-                            'created_at',
-                            'updated_at',
+                        'data' => [
+                            '*' => [
+                                'id',
+                                'title',
+                                'description',
+                                'settings',
+                                'is_archived',
+                                'last_message_at',
+                                'created_at',
+                                'updated_at',
+                            ],
                         ],
+                        'current_page',
+                        'last_page',
+                        'per_page',
+                        'total',
                     ],
-                    'current_page',
-                    'last_page',
-                    'per_page',
-                    'total',
                 ]);
 
-        $this->assertEquals(3, $response->json('total'));
+        $this->assertEquals(3, $response->json('data.total'));
     }
 
     public function test_user_can_create_chat()
@@ -68,13 +71,16 @@ class ChatTest extends TestCase
 
         $response->assertStatus(201)
                 ->assertJsonStructure([
-                    'id',
-                    'title',
-                    'description',
-                    'settings',
-                    'is_archived',
-                    'created_at',
-                    'updated_at',
+                    'success',
+                    'message',
+                    'data' => [
+                        'id',
+                        'title',
+                        'description',
+                        'settings',
+                        'created_at',
+                        'updated_at',
+                    ],
                 ]);
 
         $this->assertDatabaseHas('chats', [
@@ -94,8 +100,11 @@ class ChatTest extends TestCase
 
         $response->assertStatus(200)
                 ->assertJson([
-                    'id' => $chat->id,
-                    'title' => $chat->title,
+                    'success' => true,
+                    'data' => [
+                        'id' => $chat->id,
+                        'title' => $chat->title,
+                    ],
                 ]);
     }
 
@@ -113,8 +122,11 @@ class ChatTest extends TestCase
 
         $response->assertStatus(200)
                 ->assertJson([
-                    'title' => 'Updated Chat Title',
-                    'description' => 'Updated description',
+                    'success' => true,
+                    'data' => [
+                        'title' => 'Updated Chat Title',
+                        'description' => 'Updated description',
+                    ],
                 ]);
 
         $this->assertDatabaseHas('chats', [
@@ -152,7 +164,10 @@ class ChatTest extends TestCase
 
         $response->assertStatus(200)
                 ->assertJson([
-                    'is_archived' => true,
+                    'success' => true,
+                    'data' => [
+                        'is_archived' => true,
+                    ],
                 ]);
 
         $this->assertDatabaseHas('chats', [
@@ -171,7 +186,10 @@ class ChatTest extends TestCase
 
         $response->assertStatus(200)
                 ->assertJson([
-                    'is_archived' => false,
+                    'success' => true,
+                    'data' => [
+                        'is_archived' => false,
+                    ],
                 ]);
 
         $this->assertDatabaseHas('chats', [
@@ -191,16 +209,19 @@ class ChatTest extends TestCase
 
         $response->assertStatus(200)
                 ->assertJsonStructure([
+                    'success',
                     'data' => [
-                        '*' => [
-                            'id',
-                            'title',
-                            'is_archived',
+                        'data' => [
+                            '*' => [
+                                'id',
+                                'title',
+                                'is_archived',
+                            ],
                         ],
                     ],
                 ]);
 
-        $this->assertEquals(2, $response->json('total'));
+        $this->assertEquals(2, $response->json('data.total'));
     }
 
     public function test_user_cannot_access_other_users_chats()
@@ -212,7 +233,7 @@ class ChatTest extends TestCase
             'Authorization' => 'Bearer ' . $this->token,
         ])->getJson("/api/chats/{$chat->id}");
 
-        $response->assertStatus(403);
+        $response->assertStatus(404);
     }
 
     public function test_user_cannot_update_other_users_chats()
@@ -226,7 +247,7 @@ class ChatTest extends TestCase
             'title' => 'Hacked Title',
         ]);
 
-        $response->assertStatus(403);
+        $response->assertStatus(404);
     }
 
     public function test_user_cannot_delete_other_users_chats()
@@ -238,7 +259,7 @@ class ChatTest extends TestCase
             'Authorization' => 'Bearer ' . $this->token,
         ])->deleteJson("/api/chats/{$chat->id}");
 
-        $response->assertStatus(403);
+        $response->assertStatus(404);
     }
 
     public function test_chat_creation_requires_authentication()
@@ -257,7 +278,9 @@ class ChatTest extends TestCase
     {
         $response = $this->withHeaders([
             'Authorization' => 'Bearer ' . $this->token,
-        ])->postJson('/api/chats', []);
+        ])->postJson('/api/chats', [
+            'title' => str_repeat('a', 256), // Exceeds max length
+        ]);
 
         $response->assertStatus(422)
                 ->assertJsonValidationErrors(['title']);

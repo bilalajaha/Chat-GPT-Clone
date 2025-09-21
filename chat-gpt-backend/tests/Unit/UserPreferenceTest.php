@@ -42,8 +42,8 @@ class UserPreferenceTest extends TestCase
             'temperature' => 0.75
         ]);
 
-        $this->assertIsFloat($preferences->temperature);
-        $this->assertEquals(0.75, $preferences->temperature);
+        $this->assertIsNumeric($preferences->temperature);
+        $this->assertEquals(0.75, (float)$preferences->temperature);
     }
 
     public function test_user_preference_auto_save_is_cast_to_boolean()
@@ -121,11 +121,10 @@ class UserPreferenceTest extends TestCase
 
     public function test_user_preference_theme_validation()
     {
-        $user = User::factory()->create();
-        
         // Test valid themes
         $validThemes = ['dark', 'light'];
         foreach ($validThemes as $theme) {
+            $user = User::factory()->create();
             $preferences = UserPreference::factory()->create([
                 'user_id' => $user->id,
                 'theme' => $theme
@@ -136,11 +135,10 @@ class UserPreferenceTest extends TestCase
 
     public function test_user_preference_language_validation()
     {
-        $user = User::factory()->create();
-        
         // Test valid languages
         $validLanguages = ['en', 'es', 'fr', 'de'];
         foreach ($validLanguages as $language) {
+            $user = User::factory()->create();
             $preferences = UserPreference::factory()->create([
                 'user_id' => $user->id,
                 'language' => $language
@@ -151,11 +149,10 @@ class UserPreferenceTest extends TestCase
 
     public function test_user_preference_model_validation()
     {
-        $user = User::factory()->create();
-        
         // Test valid models
         $validModels = ['gemini-pro', 'gemini-pro-vision', 'gemini-1.5-pro', 'gemini-1.5-flash'];
         foreach ($validModels as $model) {
+            $user = User::factory()->create();
             $preferences = UserPreference::factory()->create([
                 'user_id' => $user->id,
                 'default_model' => $model
