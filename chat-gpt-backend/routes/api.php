@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\MessageController;
+use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -55,5 +56,19 @@ Route::middleware(['auth:sanctum', 'rate.limit:api,60,1'])->group(function () {
         Route::put('preferences', [UserController::class, 'updatePreferences']);
         Route::get('statistics', [UserController::class, 'statistics']);
         Route::delete('account', [UserController::class, 'deleteAccount']);
+        
+        // Data migration and export/import
+        Route::post('migrate-data', [UserController::class, 'migrateData']);
+        Route::get('export', [UserController::class, 'exportData']);
+        Route::post('import', [UserController::class, 'importData']);
+    });
+    
+    // Search routes
+    Route::prefix('search')->group(function () {
+        Route::get('chats', [SearchController::class, 'searchChats']);
+        Route::get('messages', [SearchController::class, 'searchAllMessages']);
+        Route::get('chats/{chat}/messages', [SearchController::class, 'searchMessagesInChat']);
+        Route::get('suggestions', [SearchController::class, 'getSearchSuggestions']);
+        Route::get('stats', [SearchController::class, 'getSearchStats']);
     });
 });
