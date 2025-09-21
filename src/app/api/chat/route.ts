@@ -5,7 +5,7 @@ import { ChatCompletionRequest } from '@/types';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { messages, model, temperature, max_tokens, stream } = body as ChatCompletionRequest;
+    const { messages, model, temperature, max_tokens, stream, chatId } = body as ChatCompletionRequest & { chatId?: string };
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json(
