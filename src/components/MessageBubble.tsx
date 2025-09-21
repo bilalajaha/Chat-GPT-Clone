@@ -1,26 +1,23 @@
 'use client';
 
 import { useState } from 'react';
-import { User, Bot, Copy, Check, RotateCcw } from 'lucide-react';
+import { User, Bot } from 'lucide-react';
 import { MessageBubbleProps } from '@/types';
-import { formatDate, copyToClipboard } from '@/utils';
+import { formatDate } from '@/utils';
 import { cn } from '@/utils';
+import MessageActions from './MessageActions';
 
 export default function MessageBubble({ message, isLast = false }: MessageBubbleProps) {
-  const [copied, setCopied] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-
-  const handleCopy = async () => {
-    const success = await copyToClipboard(message.content);
-    if (success) {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
 
   const handleRegenerate = () => {
     // This will be implemented when we add API integration
     console.log('Regenerate message:', message.id);
+  };
+
+  const handleDelete = () => {
+    // This will be implemented when we add message deletion
+    console.log('Delete message:', message.id);
   };
 
   const isUser = message.role === 'user';
@@ -67,26 +64,13 @@ export default function MessageBubble({ message, isLast = false }: MessageBubble
           </div>
 
           {/* Message Actions */}
-          {isAssistant && isHovered && (
-            <div className="absolute -top-2 -right-2 flex gap-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-1">
-              <button
-                onClick={handleCopy}
-                className="p-1 sm:p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                title={copied ? 'Copied!' : 'Copy message'}
-              >
-                {copied ? (
-                  <Check className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
-                ) : (
-                  <Copy className="w-3 h-3 sm:w-4 sm:h-4 text-gray-600 dark:text-gray-400" />
-                )}
-              </button>
-              <button
-                onClick={handleRegenerate}
-                className="p-1 sm:p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                title="Regenerate response"
-              >
-                <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4 text-gray-600 dark:text-gray-400" />
-              </button>
+          {isHovered && (
+            <div className="absolute -top-2 -right-2">
+              <MessageActions
+                message={message}
+                onRegenerate={isUser ? handleRegenerate : undefined}
+                onDelete={handleDelete}
+              />
             </div>
           )}
         </div>

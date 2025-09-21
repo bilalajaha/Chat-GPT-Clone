@@ -4,10 +4,14 @@ import { useState, useEffect } from 'react';
 import ChatSidebar from './ChatSidebar';
 import ChatArea from './ChatArea';
 import { useResponsive } from '@/hooks/useResponsive';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
 export default function ChatInterface() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const { isMobile, isTablet, isDesktop } = useResponsive();
+  
+  // Initialize keyboard shortcuts
+  useKeyboardShortcuts();
 
   // Handle responsive behavior
   useEffect(() => {

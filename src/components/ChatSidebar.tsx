@@ -1,13 +1,16 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Menu, Plus, MessageSquare, MoreVertical, Edit2, Trash2, Search, Trash, Download, Upload } from 'lucide-react';
+import { Menu, Plus, MessageSquare, MoreVertical, Edit2, Trash2, Search, Trash, Download, Upload, Keyboard, Settings } from 'lucide-react';
 import { useChatState } from '@/hooks/useChatState';
 import { useAppState } from '@/hooks/useAppState';
 import { Chat } from '@/types';
 import { formatChatDate, truncateText } from '@/utils';
 import DataManagement from './DataManagement';
 import ThemeToggle from './ThemeToggle';
+import KeyboardShortcutsHelp from './KeyboardShortcutsHelp';
+import AdvancedSearch from './AdvancedSearch';
+import SettingsComponent from './Settings';
 
 interface ChatSidebarProps {
   onToggle: () => void;
@@ -34,6 +37,9 @@ export default function ChatSidebar({ onToggle, isMobile }: ChatSidebarProps) {
   const [editingTitle, setEditingTitle] = useState('');
   const [showDropdown, setShowDropdown] = useState<string | null>(null);
   const [showDataManagement, setShowDataManagement] = useState(false);
+  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -50,18 +56,18 @@ export default function ChatSidebar({ onToggle, isMobile }: ChatSidebarProps) {
     };
   }, []);
 
-  // Keyboard shortcuts
+  // Handle Escape key for closing dropdowns and settings shortcut
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Ctrl/Cmd + N for new chat
-      if ((event.ctrlKey || event.metaKey) && event.key === 'n') {
-        event.preventDefault();
-        handleNewChat();
-      }
-      // Escape to close dropdown
       if (event.key === 'Escape') {
         setShowDropdown(null);
         setEditingChatId(null);
+      }
+      
+      // Settings shortcut (Ctrl/Cmd + ,)
+      if ((event.ctrlKey || event.metaKey) && event.key === ',') {
+        event.preventDefault();
+        setShowSettings(true);
       }
     };
 
@@ -134,6 +140,13 @@ export default function ChatSidebar({ onToggle, isMobile }: ChatSidebarProps) {
             ChatGPT Clone
           </h1>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowSettings(true)}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors flex-shrink-0"
+              title="Settings (Ctrl+,)"
+            >
+              <Settings className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-400" />
+            </button>
             <ThemeToggle size="sm" />
             <button
               onClick={onToggle}
@@ -167,6 +180,7 @@ export default function ChatSidebar({ onToggle, isMobile }: ChatSidebarProps) {
             placeholder="Search chats..."
             value={state.ui.searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
+            onFocus={() => setShowAdvancedSearch(true)}
             className="input-field pl-8 sm:pl-10 text-xs sm:text-sm animate-fade-in"
           />
         </div>
@@ -268,6 +282,14 @@ export default function ChatSidebar({ onToggle, isMobile }: ChatSidebarProps) {
           </div>
           <div className="flex items-center gap-2">
             <button
+              onClick={() => setShowKeyboardHelp(true)}
+              className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 flex items-center gap-1 flex-shrink-0"
+              title="Keyboard shortcuts"
+            >
+              <Keyboard className="w-3 h-3" />
+              <span className="hidden sm:inline">Shortcuts</span>
+            </button>
+            <button
               onClick={() => setShowDataManagement(true)}
               className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 flex items-center gap-1 flex-shrink-0"
               title="Data management"
@@ -292,6 +314,21 @@ export default function ChatSidebar({ onToggle, isMobile }: ChatSidebarProps) {
       {/* Data Management Modal */}
       {showDataManagement && (
         <DataManagement onClose={() => setShowDataManagement(false)} />
+      )}
+
+      {/* Keyboard Shortcuts Help Modal */}
+      {showKeyboardHelp && (
+        <KeyboardShortcutsHelp onClose={() => setShowKeyboardHelp(false)} />
+      )}
+
+      {/* Advanced Search Modal */}
+      {showAdvancedSearch && (
+        <AdvancedSearch onClose={() => setShowAdvancedSearch(false)} />
+      )}
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <SettingsComponent onClose={() => setShowSettings(false)} />
       )}
     </div>
   );
