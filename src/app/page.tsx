@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ChatProvider } from '@/context/ChatContext';
 import ChatInterface from '@/components/ChatInterface';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ErrorNotification from '@/components/ErrorNotification';
@@ -28,12 +27,10 @@ export default function Home() {
   }
 
   return (
-    <ChatProvider>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <ChatInterface />
-        <ErrorNotification />
-        <LoadingOverlay />
-      </div>
-    </ChatProvider>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <ChatInterface />
+      <ErrorNotification />
+      <LoadingOverlay />
+    </div>
   );
 }

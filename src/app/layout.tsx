@@ -5,6 +5,8 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import ErrorNotification from '@/components/ErrorNotification';
 import LoadingOverlay from '@/components/LoadingOverlay';
 import NetworkStatus from '@/components/NetworkStatus';
+import { ChatProvider } from '@/context/ChatContext';
+import ThemeProvider from '@/components/ThemeProvider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -29,10 +31,14 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ErrorBoundary>
-          <div id="root">
-            {children}
-          </div>
-          <NetworkStatus />
+          <ChatProvider>
+            <ThemeProvider>
+              <div id="root">
+                {children}
+              </div>
+              <NetworkStatus />
+            </ThemeProvider>
+          </ChatProvider>
         </ErrorBoundary>
       </body>
     </html>

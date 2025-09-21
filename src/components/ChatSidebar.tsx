@@ -7,6 +7,7 @@ import { useAppState } from '@/hooks/useAppState';
 import { Chat } from '@/types';
 import { formatChatDate, truncateText } from '@/utils';
 import DataManagement from './DataManagement';
+import ThemeToggle from './ThemeToggle';
 
 interface ChatSidebarProps {
   onToggle: () => void;
@@ -132,12 +133,15 @@ export default function ChatSidebar({ onToggle, isMobile }: ChatSidebarProps) {
           <h1 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
             ChatGPT Clone
           </h1>
-          <button
-            onClick={onToggle}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors flex-shrink-0"
-          >
-            <Menu className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-400" />
-          </button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle size="sm" />
+            <button
+              onClick={onToggle}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors flex-shrink-0"
+            >
+              <Menu className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-400" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -145,7 +149,7 @@ export default function ChatSidebar({ onToggle, isMobile }: ChatSidebarProps) {
       <div className="p-3 sm:p-4">
         <button 
           onClick={handleNewChat}
-          className="w-full flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors text-sm sm:text-base"
+          className="btn-primary w-full flex items-center gap-2 sm:gap-3 text-sm sm:text-base animate-bounce-in"
           title="New Chat (Ctrl+N)"
         >
           <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -163,7 +167,7 @@ export default function ChatSidebar({ onToggle, isMobile }: ChatSidebarProps) {
             placeholder="Search chats..."
             value={state.ui.searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
-            className="w-full pl-8 sm:pl-10 pr-2 sm:pr-3 py-1.5 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-xs sm:text-sm"
+            className="input-field pl-8 sm:pl-10 text-xs sm:text-sm animate-fade-in"
           />
         </div>
       </div>
@@ -179,16 +183,17 @@ export default function ChatSidebar({ onToggle, isMobile }: ChatSidebarProps) {
               </span>
             </div>
           ) : (
-            filteredChats.map((chat) => (
+            filteredChats.map((chat, index) => (
               <div
                 key={chat.id}
                 className={`
-                  group flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg cursor-pointer transition-colors
+                  group sidebar-item animate-fade-in
                   ${currentChat?.id === chat.id 
-                    ? 'bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800' 
-                    : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                    ? 'sidebar-item-active' 
+                    : 'sidebar-item-inactive'
                   }
                 `}
+                style={{ animationDelay: `${index * 0.1}s` }}
                 onClick={() => handleChatSelect(chat)}
               >
                 <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 flex-shrink-0" />

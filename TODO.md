@@ -61,11 +61,11 @@ This document contains a comprehensive todo list for implementing a ChatGPT clon
 - [x] **Add export/import functionality** for chat data
 
 ### Phase 9: Styling & Theming
-- [ ] **Apply modern styling** and dark/light theme support
-- [ ] **Implement dark theme** with proper color scheme
-- [ ] **Implement light theme** with proper color scheme
-- [ ] **Add theme toggle** functionality
-- [ ] **Add smooth animations** and transitions
+- [x] **Apply modern styling** and dark/light theme support
+- [x] **Implement dark theme** with proper color scheme
+- [x] **Implement light theme** with proper color scheme
+- [x] **Add theme toggle** functionality
+- [x] **Add smooth animations** and transitions
 
 ### Phase 10: Advanced Features
 - [ ] **Implement keyboard shortcuts** (Enter to send, Ctrl+N for new chat, etc.)
@@ -130,14 +130,14 @@ This document contains a comprehensive todo list for implementing a ChatGPT clon
 - [x] Phase 6: Error Handling & User Experience (6/6 tasks) ✅
 - [x] Phase 7: Responsive Design (3/3 tasks) ✅
 - [x] Phase 8: Data Persistence (4/4 tasks) ✅
-- [ ] Phase 9: Styling & Theming (0/5 tasks)
+- [x] Phase 9: Styling & Theming (5/5 tasks) ✅
 - [ ] Phase 10: Advanced Features (0/6 tasks)
 - [ ] Phase 11: Testing & Quality Assurance (0/3 tasks)
 - [ ] Phase 12: Deployment (0/3 tasks)
 
 **Total Tasks**: 57
-**Completed**: 39
-**Remaining**: 18
+**Completed**: 44
+**Remaining**: 13
 
 ---
 *Last Updated: [Current Date]*
