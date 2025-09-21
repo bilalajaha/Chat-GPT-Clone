@@ -117,3 +117,105 @@ export async function copyToClipboard(text: string): Promise<boolean> {
     return success;
   }
 }
+
+// Export chat data to JSON file
+export function exportChatData(chats: any[], filename?: string): void {
+  try {
+    const dataStr = JSON.stringify(chats, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename || `chatgpt-clone-backup-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Error exporting chat data:', error);
+    throw new Error('Failed to export chat data');
+  }
+}
+
+// Import chat data from JSON file
+export function importChatData(file: File): Promise<any[]> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string;
+        const data = JSON.parse(content);
+        
+        // Validate the imported data structure
+        if (!Array.isArray(data)) {
+          throw new Error('Invalid file format: Expected an array of chats');
+        }
+        
+        // Basic validation for chat structure
+        const isValidChat = (chat: any) => {
+          return chat && 
+                 typeof chat.id === 'string' && 
+                 typeof chat.title === 'string' &&
+                 Array.isArray(chat.messages) &&
+                 chat.createdAt &&
+                 chat.updatedAt;
+        };
+        
+        if (!data.every(isValidChat)) {
+          throw new Error('Invalid file format: Some chats have invalid structure');
+        }
+        
+        resolve(data);
+      } catch (error) {
+        reject(new Error('Failed to parse imported file: ' + (error as Error).message));
+      }
+    };
+    
+    reader.onerror = () => {
+      reject(new Error('Failed to read file'));
+    };
+    
+    reader.readAsText(file);
+  });
+}
+
+// Validate imported chat data
+export function validateImportedChats(chats: any[]): { valid: any[]; invalid: any[] } {
+  const valid: any[] = [];
+  const invalid: any[] = [];
+  
+  chats.forEach((chat, index) => {
+    try {
+      // Check required fields
+      if (!chat.id || !chat.title || !Array.isArray(chat.messages)) {
+        invalid.push({ ...chat, error: 'Missing required fields', index });
+        return;
+      }
+      
+      // Convert date strings to Date objects
+      const processedChat = {
+        ...chat,
+        createdAt: new Date(chat.createdAt),
+        updatedAt: new Date(chat.updatedAt),
+        messages: chat.messages.map((msg: any) => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp),
+        })),
+      };
+      
+      // Validate dates
+      if (isNaN(processedChat.createdAt.getTime()) || isNaN(processedChat.updatedAt.getTime())) {
+        invalid.push({ ...chat, error: 'Invalid date format', index });
+        return;
+      }
+      
+      valid.push(processedChat);
+    } catch (error) {
+      invalid.push({ ...chat, error: 'Processing error', index });
+    }
+  });
+  
+  return { valid, invalid };
+}

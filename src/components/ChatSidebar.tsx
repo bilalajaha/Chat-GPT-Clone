@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Menu, Plus, MessageSquare, MoreVertical, Edit2, Trash2, Search, Trash } from 'lucide-react';
+import { Menu, Plus, MessageSquare, MoreVertical, Edit2, Trash2, Search, Trash, Download, Upload } from 'lucide-react';
 import { useChatState } from '@/hooks/useChatState';
 import { useAppState } from '@/hooks/useAppState';
 import { Chat } from '@/types';
 import { formatChatDate, truncateText } from '@/utils';
+import DataManagement from './DataManagement';
 
 interface ChatSidebarProps {
   onToggle: () => void;
@@ -24,12 +25,14 @@ export default function ChatSidebar({ onToggle, isMobile }: ChatSidebarProps) {
     searchChats 
   } = useChatState();
   const { 
+    state,
     setSearchQuery, 
     setEditingChatId, 
     setSidebarOpen 
   } = useAppState();
   const [editingTitle, setEditingTitle] = useState('');
   const [showDropdown, setShowDropdown] = useState<string | null>(null);
+  const [showDataManagement, setShowDataManagement] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -119,7 +122,7 @@ export default function ChatSidebar({ onToggle, isMobile }: ChatSidebarProps) {
     setSearchQuery(query);
   };
 
-  const filteredChats = searchChats(searchQuery);
+  const filteredChats = searchChats(state.ui.searchQuery);
 
   return (
     <div className="h-full flex flex-col">
@@ -158,7 +161,7 @@ export default function ChatSidebar({ onToggle, isMobile }: ChatSidebarProps) {
           <input
             type="text"
             placeholder="Search chats..."
-            value={searchQuery}
+            value={state.ui.searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
             className="w-full pl-8 sm:pl-10 pr-2 sm:pr-3 py-1.5 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-xs sm:text-sm"
           />
@@ -172,7 +175,7 @@ export default function ChatSidebar({ onToggle, isMobile }: ChatSidebarProps) {
             <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 text-gray-500 dark:text-gray-400">
               <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
               <span className="text-xs sm:text-sm">
-                {searchQuery ? 'No chats found' : 'No chats yet'}
+                {state.ui.searchQuery ? 'No chats found' : 'No chats yet'}
               </span>
             </div>
           ) : (
@@ -258,18 +261,33 @@ export default function ChatSidebar({ onToggle, isMobile }: ChatSidebarProps) {
           <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate">
             ChatGPT Clone v1.0
           </div>
-          {chats.length > 0 && (
+          <div className="flex items-center gap-2">
             <button
-              onClick={handleClearAllChats}
-              className="text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 flex items-center gap-1 flex-shrink-0"
-              title="Clear all chats"
+              onClick={() => setShowDataManagement(true)}
+              className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 flex items-center gap-1 flex-shrink-0"
+              title="Data management"
             >
-              <Trash className="w-3 h-3" />
-              <span className="hidden sm:inline">Clear All</span>
+              <Download className="w-3 h-3" />
+              <span className="hidden sm:inline">Data</span>
             </button>
-          )}
+            {chats.length > 0 && (
+              <button
+                onClick={handleClearAllChats}
+                className="text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 flex items-center gap-1 flex-shrink-0"
+                title="Clear all chats"
+              >
+                <Trash className="w-3 h-3" />
+                <span className="hidden sm:inline">Clear All</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Data Management Modal */}
+      {showDataManagement && (
+        <DataManagement onClose={() => setShowDataManagement(false)} />
+      )}
     </div>
   );
 }

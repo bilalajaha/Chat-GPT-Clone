@@ -1,5 +1,6 @@
 import { useChat } from '@/context/ChatContext';
 import { useCallback } from 'react';
+import { exportChatData, importChatData, validateImportedChats } from '@/utils';
 
 // Custom hook for app state management
 export function useAppState() {
@@ -96,6 +97,36 @@ export function useAppState() {
     dispatch({ type: 'RESET_UI' });
   }, [dispatch]);
 
+  // Export/Import functions
+  const exportChats = useCallback((filename?: string) => {
+    try {
+      exportChatData(state.chats, filename);
+    } catch (error) {
+      console.error('Export failed:', error);
+      throw error;
+    }
+  }, [state.chats]);
+
+  const importChats = useCallback(async (file: File) => {
+    try {
+      const importedData = await importChatData(file);
+      const { valid, invalid } = validateImportedChats(importedData);
+      
+      if (invalid.length > 0) {
+        console.warn('Some chats could not be imported:', invalid);
+      }
+      
+      if (valid.length > 0) {
+        dispatch({ type: 'IMPORT_CHATS', payload: valid });
+      }
+      
+      return { valid, invalid };
+    } catch (error) {
+      console.error('Import failed:', error);
+      throw error;
+    }
+  }, [dispatch]);
+
   return {
     state,
     dispatch,
@@ -125,5 +156,8 @@ export function useAppState() {
     setShowSettings,
     setShowAbout,
     resetUI,
+    // Export/Import
+    exportChats,
+    importChats,
   };
 }

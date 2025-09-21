@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
 import { Chat, Message, AppState, LoadingState, ErrorState, UserPreferences, AppSettings, ChatStats } from '@/types';
-import { generateId, storage } from '@/utils';
+import { generateId, storage, exportChatData, importChatData, validateImportedChats } from '@/utils';
 
 // Initial state
 const initialState: AppState = {
@@ -75,6 +75,7 @@ type ChatAction =
   | { type: 'RENAME_CHAT'; payload: { chatId: string; title: string } }
   | { type: 'LOAD_CHATS'; payload: Chat[] }
   | { type: 'CLEAR_ALL_CHATS' }
+  | { type: 'IMPORT_CHATS'; payload: Chat[] }
   
   // Theme actions
   | { type: 'SET_THEME'; payload: 'light' | 'dark' }
@@ -290,6 +291,20 @@ function chatReducer(state: AppState, action: ChatAction): AppState {
           ...state.stats,
           totalChats: 0,
           totalMessages: 0,
+        },
+      };
+    
+    case 'IMPORT_CHATS':
+      const importedChats = action.payload;
+      const totalImportedMessages = importedChats.reduce((acc, chat) => acc + chat.messages.length, 0);
+      return {
+        ...state,
+        chats: [...state.chats, ...importedChats],
+        stats: {
+          ...state.stats,
+          totalChats: state.stats.totalChats + importedChats.length,
+          totalMessages: state.stats.totalMessages + totalImportedMessages,
+          lastActivity: new Date(),
         },
       };
     
