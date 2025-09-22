@@ -10,7 +10,7 @@ export function useChatState() {
   // Chat management
   const createNewChat = useCallback((title?: string) => {
     const newChat: Chat = {
-      id: `chat-${Date.now()}`,
+      id: `chat-${generateId()}`,
       title: title || 'New Chat',
       messages: [],
       createdAt: new Date(),
@@ -40,7 +40,7 @@ export function useChatState() {
   const addMessage = useCallback((chatId: string, message: Omit<Message, 'id' | 'timestamp'>) => {
     const newMessage: Message = {
       ...message,
-      id: `msg-${Date.now()}`,
+      id: `msg-${generateId()}`,
       timestamp: new Date(),
     };
     dispatch({ type: 'ADD_MESSAGE', payload: { chatId, message: newMessage } });
