@@ -10,6 +10,22 @@ import MessageActions from './MessageActions';
 export default function MessageBubble({ message, isLast = false }: MessageBubbleProps) {
   const [isHovered, setIsHovered] = useState(false);
 
+  // Minimal safe renderer to support bold markdown (**text**) and newlines
+  const renderContentAsHtml = (text: string) => {
+    const escapeHtml = (input: string) =>
+      input
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
+    const escaped = escapeHtml(text);
+    const withBold = escaped.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    const withNewlines = withBold.replace(/\n/g, '<br/>');
+    return withNewlines;
+  };
+
   const handleRegenerate = () => {
     // This will be implemented when we add API integration
     console.log('Regenerate message:', message.id);
@@ -60,7 +76,10 @@ export default function MessageBubble({ message, isLast = false }: MessageBubble
         )}>
           {/* Message Text */}
           <div className="prose prose-sm max-w-none dark:prose-invert">
-            <p className="whitespace-pre-wrap m-0 text-sm sm:text-base">{message.content}</p>
+            <p
+              className="m-0 text-sm sm:text-base"
+              dangerouslySetInnerHTML={{ __html: renderContentAsHtml(message.content) }}
+            />
           </div>
 
           {/* Message Actions */}
