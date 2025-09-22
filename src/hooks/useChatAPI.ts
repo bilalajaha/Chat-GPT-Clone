@@ -36,11 +36,13 @@ export function useChatAPI(): UseChatAPIReturn {
     try {
       const request: ChatCompletionRequest = {
         messages,
-        model: options.model || 'gemini-pro',
+        model: options.model || 'gemini-1.5-flash',
         temperature: options.temperature || 0.7,
         max_tokens: options.max_tokens || 1000,
         stream: false,
       };
+
+      console.log('Sending request to /api/chat:', request);
 
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -48,17 +50,25 @@ export function useChatAPI(): UseChatAPIReturn {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(request),
+      }).catch((fetchError) => {
+        console.error('Fetch error:', fetchError);
+        throw new Error(`Network error: ${fetchError.message}`);
       });
 
+      console.log('Response status:', response.status);
+
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('API error:', errorData);
         throw new Error(errorData.error || 'Failed to send message');
       }
 
       const data = await response.json();
+      console.log('Response data:', data);
       return data;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+      console.error('Error in sendMessage:', errorMessage);
       setError(errorMessage);
       throw err;
     } finally {
@@ -80,11 +90,13 @@ export function useChatAPI(): UseChatAPIReturn {
     try {
       const request: ChatCompletionRequest = {
         messages,
-        model: options.model || 'gemini-pro',
+        model: options.model || 'gemini-1.5-flash',
         temperature: options.temperature || 0.7,
         max_tokens: options.max_tokens || 1000,
         stream: true,
       };
+
+      console.log('Sending streaming request to /api/chat:', request);
 
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -92,10 +104,16 @@ export function useChatAPI(): UseChatAPIReturn {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(request),
+      }).catch((fetchError) => {
+        console.error('Fetch error:', fetchError);
+        throw new Error(`Network error: ${fetchError.message}`);
       });
 
+      console.log('Streaming response status:', response.status);
+
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('API error:', errorData);
         throw new Error(errorData.error || 'Failed to send message');
       }
 
@@ -131,6 +149,7 @@ export function useChatAPI(): UseChatAPIReturn {
                 }
               } catch (e) {
                 // Ignore parsing errors for malformed chunks
+                console.warn('Failed to parse streaming data:', data);
               }
             }
           }
@@ -140,6 +159,8 @@ export function useChatAPI(): UseChatAPIReturn {
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+      console.error('Error in sendStreamingMessage:', errorMessage);
+      console.error('Full error object:', err);
       setError(errorMessage);
       throw err;
     } finally {

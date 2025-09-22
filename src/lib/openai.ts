@@ -105,7 +105,8 @@ export async function createChatCompletion(
     return convertFromGeminiFormat(geminiResponse, request.model || 'gemini-pro');
   } catch (error) {
     console.error('Gemini API Error:', error);
-    throw new Error('Failed to get response from AI');
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    throw new Error(`Failed to get response from AI: ${errorMessage}`);
   }
 }
 
@@ -129,7 +130,8 @@ export async function* createStreamingChatCompletion(
     }
   } catch (error) {
     console.error('Gemini Streaming Error:', error);
-    throw new Error('Failed to get streaming response from AI');
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    throw new Error(`Failed to get streaming response from AI: ${errorMessage}`);
   }
 }
 

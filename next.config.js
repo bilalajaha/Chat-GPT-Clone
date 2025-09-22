@@ -6,7 +6,15 @@ const nextConfig = {
     domains: [],
   },
   env: {
-    GEMINI_API_KEY: config.GEMINI_API_KEY,
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY || config.GEMINI_API_KEY,
+  },
+  // Ensure environment variables are available at build time
+  webpack: (config) => {
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+    };
+    return config;
   },
 }
 

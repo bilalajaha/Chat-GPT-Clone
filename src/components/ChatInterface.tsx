@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import ChatSidebar from './ChatSidebar';
-import ChatArea from './ChatArea';
+import ModernChatInterface from './ModernChatInterface';
 import { useResponsive } from '@/hooks/useResponsive';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
@@ -59,7 +59,7 @@ export default function ChatInterface() {
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        <ChatArea 
+        <ModernChatInterface 
           sidebarOpen={sidebarOpen}
           onToggleSidebar={toggleSidebar}
           isMobile={isMobile}

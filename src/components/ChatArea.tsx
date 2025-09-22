@@ -29,7 +29,16 @@ export default function ChatArea({ sidebarOpen, onToggleSidebar, isMobile }: Cha
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesEndRef.current) {
+      // Use setTimeout to ensure DOM is updated
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'end',
+          inline: 'nearest'
+        });
+      }, 100);
+    }
   }, [currentChat?.messages]);
 
   // Handle API errors
@@ -73,14 +82,11 @@ export default function ChatArea({ sidebarOpen, onToggleSidebar, isMobile }: Cha
     setLoading(true);
 
     try {
-      // Prepare messages for API call
-      const messages = [
-        ...chatToUse.messages.map(msg => ({
-          role: msg.role as 'user' | 'assistant' | 'system',
-          content: msg.content
-        })),
-        { role: 'user' as const, content: messageContent.trim() }
-      ];
+      // Prepare messages for API call (exclude the user message we just added)
+      const messages = chatToUse.messages.map(msg => ({
+        role: msg.role as 'user' | 'assistant' | 'system',
+        content: msg.content
+      }));
 
       // Stream the response
       let fullResponse = '';
@@ -136,8 +142,8 @@ export default function ChatArea({ sidebarOpen, onToggleSidebar, isMobile }: Cha
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-2 sm:p-4">
-        <div className="max-w-4xl mx-auto">
+      <div className="flex-1 overflow-y-auto p-2 sm:p-4 scroll-smooth">
+        <div className="max-w-4xl mx-auto min-h-full">
           {!currentChat || currentChat.messages.length === 0 ? (
             /* Welcome Message */
             <div className="text-center py-8 sm:py-12 px-4">

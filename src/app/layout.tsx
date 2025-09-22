@@ -6,6 +6,7 @@ import ErrorNotification from '@/components/ErrorNotification';
 import LoadingOverlay from '@/components/LoadingOverlay';
 import { NetworkStatus } from '@/components/NetworkStatus';
 import { ChatProvider } from '@/context/ChatContext';
+import { ApiChatProvider } from '@/context/ApiChatContext';
 import ThemeProvider from '@/components/ThemeProvider';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -28,17 +29,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+    <html lang="en" suppressHydrationWarning className="dark">
+      <body className={`${inter.className} dark`}>
         <ErrorBoundary>
-          <ChatProvider>
-            <ThemeProvider>
-              <div id="root">
-                {children}
-              </div>
-              <NetworkStatus />
-            </ThemeProvider>
-          </ChatProvider>
+          <ApiChatProvider>
+            <ChatProvider>
+              <ThemeProvider>
+                <div id="root">
+                  {children}
+                </div>
+                <NetworkStatus />
+              </ThemeProvider>
+            </ChatProvider>
+          </ApiChatProvider>
         </ErrorBoundary>
       </body>
     </html>
